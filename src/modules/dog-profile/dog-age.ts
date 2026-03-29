@@ -46,6 +46,30 @@ export function parseOnboardingDobToDate(dob: OnboardingDobState): Date | null {
   return d;
 }
 
+/** Earliest selectable birth date in the native picker. */
+export const ONBOARDING_DOB_MIN_DATE = new Date(1900, 0, 1);
+
+/** Sensible default when opening the picker with no valid date yet (e.g. ~3 years ago). */
+export function defaultBirthPickerDate(now = new Date()): Date {
+  return new Date(now.getFullYear() - 3, now.getMonth(), now.getDate());
+}
+
+/** Persisted shape from a local `Date` (uses full English month names for compatibility with {@link parseOnboardingMonthIndex}). */
+export function birthDateToOnboardingDobState(d: Date): OnboardingDobState {
+  return {
+    month: MONTH_NAMES[d.getMonth()],
+    day: String(d.getDate()).padStart(2, '0'),
+    year: String(d.getFullYear()),
+  };
+}
+
+/** Human-readable date for the onboarding row; `null` if DOB is still placeholders / invalid. */
+export function formatOnboardingDobForDisplay(dob: OnboardingDobState): string | null {
+  const d = parseOnboardingDobToDate(dob);
+  if (!d) return null;
+  return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
 export function formatDogAgeFromBirthDate(birth: Date, now = new Date()): string {
   const start = new Date(birth.getFullYear(), birth.getMonth(), birth.getDate());
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());

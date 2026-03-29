@@ -6,22 +6,12 @@ import { HomeBentoRoutineSection } from '@/components/routine';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useHomeDogProfile } from '@/hooks/use-home-dog-profile';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useTheme } from '@/hooks/use-theme';
 import { appStrings } from '@/strings';
 
 const HERO_FALLBACK = require('@/assets/images/stitch-hero-cooper.png');
 const AVATAR_PLACEHOLDER = require('@/assets/images/stitch-profile-avatar.png');
 
 export default function HomeScreen() {
-  const scheme = useColorScheme();
-  const theme = useTheme();
-  const light = scheme !== 'dark';
-
-  const canvas = light ? StitchCupertinoHome.canvas : theme.background;
-  const headerTint = light ? StitchCupertinoHome.headerBlurTint : theme.backgroundElement;
-  const titleColor = light ? StitchCupertinoHome.onSurface : theme.text;
-
   const { profile, avatarUri, ageLabel, ready } = useHomeDogProfile();
 
   const heroTitle = profile
@@ -39,12 +29,12 @@ export default function HomeScreen() {
     !ready ? HERO_FALLBACK : profile && !avatarUri ? null : HERO_FALLBACK;
 
   return (
-    <View style={[styles.root, { backgroundColor: canvas }]}>
+    <View style={[styles.root, { backgroundColor: StitchCupertinoHome.canvas }]}>
       <SafeAreaView style={styles.safeTop} edges={['top']}>
         <HomeHeader
           brand={appStrings.home.brand}
-          titleColor={titleColor}
-          headerBackgroundColor={headerTint}
+          titleColor={StitchCupertinoHome.onSurface}
+          headerBackgroundColor={StitchCupertinoHome.headerBlurTint}
           avatarUri={ready ? avatarUri : null}
           placeholder={AVATAR_PLACEHOLDER}
           avatarRevision={revision}

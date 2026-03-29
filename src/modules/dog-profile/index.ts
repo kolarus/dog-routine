@@ -1,6 +1,10 @@
 export {
+  birthDateToOnboardingDobState,
+  defaultBirthPickerDate,
   formatDogAgeFromBirthDate,
   formatDogAgeLabelFromDob,
+  formatOnboardingDobForDisplay,
+  ONBOARDING_DOB_MIN_DATE,
   parseOnboardingDobToDate,
   parseOnboardingMonthIndex,
 } from './dog-age';

@@ -5,22 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { clearAllPersistedDogData } from '@/modules/dog-profile';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { BottomTabInset, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useTheme } from '@/hooks/use-theme';
 import { appStrings } from '@/strings';
 
 const s = appStrings.settings;
 
 export default function SettingsScreen() {
-  const scheme = useColorScheme();
-  const theme = useTheme();
-  const light = scheme !== 'dark';
   const [busy, setBusy] = useState(false);
-
-  const bg = light ? StitchCupertinoHome.canvas : theme.background;
-  const text = light ? StitchCupertinoHome.onSurface : theme.text;
-  const secondary = light ? StitchCupertinoHome.onSurfaceVariant : theme.textSecondary;
-  const card = light ? StitchCupertinoHome.surfaceLowest : theme.backgroundElement;
 
   const onClearPress = () => {
     Alert.alert(s.clearConfirmTitle, s.clearConfirmMessage, [
@@ -44,14 +34,18 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: bg }]} edges={['top']}>
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: StitchCupertinoHome.canvas }]}
+      edges={['top']}>
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: BottomTabInset + Spacing.four }]}
         showsVerticalScrollIndicator={false}>
-        <Text style={[styles.title, { color: text }]}>{s.title}</Text>
+        <Text style={[styles.title, { color: StitchCupertinoHome.onSurface }]}>{s.title}</Text>
 
-        <View style={[styles.card, { backgroundColor: card }]}>
-          <Text style={[styles.hint, { color: secondary }]}>{s.clearDataHint}</Text>
+        <View style={[styles.card, { backgroundColor: StitchCupertinoHome.surfaceLowest }]}>
+          <Text style={[styles.hint, { color: StitchCupertinoHome.onSurfaceVariant }]}>
+            {s.clearDataHint}
+          </Text>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={s.clearData}

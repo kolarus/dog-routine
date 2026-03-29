@@ -10,10 +10,7 @@ import {
 } from 'react-native';
 
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
-import { useTheme } from '@/hooks/use-theme';
 import { appStrings } from '@/strings';
-
-import type { RoutineAppearance } from './types';
 
 export type RoutinePillProps = {
   label: string;
@@ -23,8 +20,6 @@ export type RoutinePillProps = {
   iconWell: string;
   showDue?: boolean;
   onPress?: () => void;
-  /** `stitch-light` uses Cupertino home tokens; `system` follows app light/dark theme. */
-  appearance: RoutineAppearance;
   /** Layout-only styles (width, flex, margins) from the parent container. */
   layoutStyle?: StyleProp<ViewStyle>;
 };
@@ -37,16 +32,12 @@ export function RoutinePill({
   iconWell,
   showDue,
   onPress,
-  appearance,
   layoutStyle,
 }: RoutinePillProps) {
-  const theme = useTheme();
-  const stitch = appearance === 'stitch-light';
-
-  const cardBg = stitch ? StitchCupertinoHome.surfaceLowest : theme.backgroundElement;
-  const titleColor = stitch ? StitchCupertinoHome.onSurface : theme.text;
-  const subtitleColor = stitch ? StitchCupertinoHome.onSurfaceVariant : theme.textSecondary;
-  const borderColor = stitch ? 'rgba(132, 117, 96, 0.12)' : 'rgba(255,255,255,0.08)';
+  const cardBg = StitchCupertinoHome.surfaceLowest;
+  const titleColor = StitchCupertinoHome.onSurface;
+  const subtitleColor = StitchCupertinoHome.onSurfaceVariant;
+  const borderColor = 'rgba(132, 117, 96, 0.12)';
 
   return (
     <Pressable

@@ -42,9 +42,9 @@ Home screen
 `profile-disk-events.ts` is a lightweight pub/sub (`Set<Listener>`).
 
 - **Producer:** `useOnboardingProfile` (after save) and `clearAllPersistedDogData` (after clear)
-- **Consumers:** `useHomeDogProfile` (refreshes home) — any future consumer can subscribe the same way
+- **Consumers:** `useHomeDogProfile` (refreshes home); `useOnboardingProfile` (re-syncs form + photo when data is cleared or changed elsewhere, e.g. Settings)
 
-The onboarding hook does **not** subscribe to its own events. It owns the source of truth in local state and only fires the event for other screens.
+After save, the onboarding hook receives its own notification and reloads from disk once; that is redundant but keeps one code path for external clears.
 
 ## Image cache busting
 

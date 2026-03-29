@@ -10,7 +10,7 @@ import {
 } from '@/modules/local-photo';
 import { appStrings } from '@/strings';
 
-import { notifyProfileDiskChanged } from './profile-disk-events';
+import { notifyProfileDiskChanged, subscribeProfileDiskChanged } from './profile-disk-events';
 import {
   isOnboardingProfileComplete,
   loadOnboardingProfile,
@@ -34,8 +34,9 @@ function stripUriQuery(uri: string): string {
 /**
  * Onboarding form state. JSON and canonical avatar file are written only when the user taps Save.
  *
- * This hook does **not** subscribe to {@link subscribeProfileDiskChanged} — it is the *producer*
- * of that event (via {@link saveProfile}). Other screens (Home, Settings) subscribe as consumers.
+ * Subscribes to {@link subscribeProfileDiskChanged} so **Settings → Clear data** (or any external
+ * disk change) resets this form and drops the photo when the avatar file is gone. After
+ * {@link saveProfile}, the same event runs a redundant reload; that is harmless.
  */
 export function useOnboardingProfile() {
   const [hydrated, setHydrated] = useState(false);
@@ -80,6 +81,38 @@ export function useOnboardingProfile() {
     };
   }, []);
 
+  useEffect(() => {
+    return subscribeProfileDiskChanged(() => {
+      void (async () => {
+        const profile = await loadOnboardingProfile();
+        if (profile) {
+          setDogName(profile.dogName);
+          setDob(profile.dob);
+          setHasSavedProfile(isOnboardingProfileComplete(profile));
+          setAvatarDisplayToken(profile.savedAt);
+        } else {
+          setDogName('');
+          setDob(defaultDob());
+          setHasSavedProfile(false);
+          setAvatarDisplayToken(0);
+        }
+
+        const avatarExists = await dogAvatarFileExists();
+        const canonical = resolveDocumentFileUri(DOG_AVATAR_RELATIVE_PATH);
+        const pick = pickUriRef.current;
+
+        if (avatarExists) {
+          setSavedAvatarUri(getDogAvatarFileUri());
+        } else {
+          setSavedAvatarUri(null);
+          if (pick && canonical && stripUriQuery(pick) === stripUriQuery(canonical)) {
+            photo.clear();
+          }
+        }
+      })();
+    });
+  }, [photo]);
+
   const saveProfile = useCallback(async () => {
     const name = dogNameRef.current;
     const dobSnap = dobRef.current;
@@ -102,27 +135,6 @@ export function useOnboardingProfile() {
     notifyProfileDiskChanged();
   }, [photo]);
 
-  const onDobSegment = useCallback((id: string) => {
-    if (id === 'month') {
-      setDob((d) => ({
-        ...d,
-        month: d.month === s.dobInitialMonth ? s.dobDemoMonth : s.dobInitialMonth,
-      }));
-    }
-    if (id === 'day') {
-      setDob((d) => ({
-        ...d,
-        day: d.day === s.dobInitialDay ? s.dobDemoDay : s.dobInitialDay,
-      }));
-    }
-    if (id === 'year') {
-      setDob((d) => ({
-        ...d,
-        year: d.year === s.dobInitialYear ? s.dobDemoYear : s.dobInitialYear,
-      }));
-    }
-  }, []);
-
   const clearAvatar = useCallback(async () => {
     photo.clear();
     setSavedAvatarUri(null);
@@ -135,7 +147,7 @@ export function useOnboardingProfile() {
     dogName,
     setDogName,
     dob,
-    onDobSegment,
+    setDob,
     avatarUri,
     avatarDisplayToken,
     pickAvatar: photo.pickFromLibrary,

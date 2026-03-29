@@ -13,4 +13,3 @@ export type RoutineItem = {
   showDue?: boolean;
 };
 
-export type RoutineAppearance = 'stitch-light' | 'system';

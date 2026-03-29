@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 
 import {
-  OnboardingDobRow,
+  OnboardingDobField,
   OnboardingFocusedLayout,
   OnboardingMomentumHeader,
   OnboardingPhotoSlot,
@@ -38,15 +38,7 @@ export default function OnboardingScreen() {
           autoCapitalize="words"
           autoCorrect={false}
         />
-        <OnboardingDobRow
-          fieldLabel={s.dobLabel}
-          segments={[
-            { id: 'month', label: profile.dob.month, flex: 1 },
-            { id: 'day', label: profile.dob.day, flex: 0, minWidth: 80, maxWidth: 88 },
-            { id: 'year', label: profile.dob.year, flex: 0, minWidth: 96, maxWidth: 104 },
-          ]}
-          onPressSegment={profile.onDobSegment}
-        />
+        <OnboardingDobField fieldLabel={s.dobLabel} dob={profile.dob} onChangeDob={profile.setDob} />
       </View>
     </OnboardingFocusedLayout>
   );

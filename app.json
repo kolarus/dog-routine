@@ -8,7 +8,7 @@
     "scheme": "dogroutine",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.anonymous.dogroutine",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "DogRoutine needs access to your photo library so you can choose your dog's profile picture."
@@ -16,9 +16,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#1E1B4B",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,

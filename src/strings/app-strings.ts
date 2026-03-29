@@ -44,10 +44,11 @@ export const appStrings = {
     dobInitialMonth: 'Month',
     dobInitialDay: '01',
     dobInitialYear: '2023',
-    /** Placeholder toggles for demo taps (until real pickers exist) */
-    dobDemoMonth: 'June',
-    dobDemoDay: '15',
-    dobDemoYear: '2021',
+    dobTapToChoose: 'Tap to choose date of birth',
+    dobDone: 'Done',
+    /** Web-only: ISO date hint */
+    dobWebPlaceholder: 'YYYY-MM-DD',
+    dobWebApply: 'Apply',
     saveProfile: 'Save Profile',
   },
 

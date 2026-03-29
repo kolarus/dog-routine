@@ -35,7 +35,7 @@ src/
 │   │   ├── onboarding-momentum-header.tsx
 │   │   ├── onboarding-photo-slot.tsx
 │   │   ├── onboarding-underline-field.tsx
-│   │   ├── onboarding-dob-row.tsx
+│   │   ├── onboarding-dob-field.tsx
 │   │   └── onboarding-primary-cta.tsx
 │   └── routine/            # Routine cards (bento grid on home)
 │       ├── routine-pill.tsx

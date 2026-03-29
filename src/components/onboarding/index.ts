@@ -1,5 +1,5 @@
-export { OnboardingDobRow } from './onboarding-dob-row';
-export type { OnboardingDobRowProps, OnboardingDobSegment } from './onboarding-dob-row';
+export { OnboardingDobField } from './onboarding-dob-field';
+export type { OnboardingDobFieldProps } from './onboarding-dob-field';
 export { OnboardingFocusedLayout } from './onboarding-focused-layout';
 export type { OnboardingFocusedLayoutProps } from './onboarding-focused-layout';
 export { OnboardingMomentumHeader } from './onboarding-momentum-header';
