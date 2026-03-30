@@ -2,13 +2,18 @@ import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { appStrings } from '@/strings';
+import { shouldForceOpaqueNativeTabBarOnIos } from '@/utils/ios';
 
 export default function AppTabs() {
+  const opaqueTabBarFill = shouldForceOpaqueNativeTabBarOnIos();
+
   return (
     <NativeTabs
       backgroundColor={StitchCupertinoHome.canvas}
       indicatorColor={StitchCupertinoHome.surfaceLow}
-      labelStyle={{ selected: { color: StitchCupertinoHome.onSurface } }}>
+      labelStyle={{ selected: { color: StitchCupertinoHome.onSurface } }}
+      disableTransparentOnScrollEdge={opaqueTabBarFill}
+      blurEffect={opaqueTabBarFill ? 'none' : undefined}>
       <NativeTabs.Trigger name="onboarding">
         <NativeTabs.Trigger.Label>{appStrings.tabs.start}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon

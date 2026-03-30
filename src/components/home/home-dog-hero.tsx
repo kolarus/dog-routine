@@ -62,25 +62,27 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: StitchCupertinoHome.heroRadius,
   },
+  /** Bottom ~30% only — enough contrast for title / age over the image. */
   heroScrim: {
     ...StyleSheet.absoluteFillObject,
-    top: '40%',
-    backgroundColor: 'rgba(0,0,0,0.38)',
+    top: '70%',
+    backgroundColor: 'rgba(0,0,0,0.34)',
   },
   heroCopy: {
-    padding: Spacing.four,
-    paddingBottom: Spacing.five,
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.four,
   },
   heroTitle: {
     color: '#ffffff',
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
     letterSpacing: -0.5,
   },
   heroSubtitle: {
     color: 'rgba(255,255,255,0.92)',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    marginTop: 4,
+    marginTop: 2,
   },
 });
