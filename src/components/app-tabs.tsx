@@ -4,6 +4,16 @@ import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { appStrings } from '@/strings';
 import { shouldForceOpaqueNativeTabBarOnIos } from '@/utils/ios';
 
+/**
+ * React Navigation param list for this tab navigator.
+ * Keys must stay in sync with every `NativeTabs.Trigger name` below.
+ */
+export type AppTabParamList = {
+  onboarding: undefined;
+  index: undefined;
+  settings: undefined;
+};
+
 export default function AppTabs() {
   const opaqueTabBarFill = shouldForceOpaqueNativeTabBarOnIos();
 

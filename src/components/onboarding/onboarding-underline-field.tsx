@@ -10,6 +10,8 @@ const INPUT_PAD_V = 16;
 const INPUT_PAD_H = 16;
 const BORDER_RADIUS = 12;
 const LABEL_MARGIN = 8;
+const PLACEHOLDER_COLOR = 'rgba(81, 69, 50, 0.4)';
+const UNDERLINE_IDLE = 'rgba(214, 196, 172, 0.2)';
 
 export type OnboardingUnderlineFieldProps = {
   label: string;
@@ -26,8 +28,6 @@ export function OnboardingUnderlineField({
   ...inputProps
 }: OnboardingUnderlineFieldProps) {
   const [focused, setFocused] = React.useState(false);
-  const placeholderColor = 'rgba(81, 69, 50, 0.4)';
-  const underlineIdle = 'rgba(214, 196, 172, 0.2)';
 
   return (
     <View style={styles.group}>
@@ -39,7 +39,7 @@ export function OnboardingUnderlineField({
           styles.fieldShell,
           {
             backgroundColor: OnboardingFocusedColors.surfaceContainerLow,
-            borderBottomColor: focused ? OnboardingFocusedColors.primaryContainer : underlineIdle,
+            borderBottomColor: focused ? OnboardingFocusedColors.primaryContainer : UNDERLINE_IDLE,
             borderTopLeftRadius: BORDER_RADIUS,
             borderTopRightRadius: BORDER_RADIUS,
           },
@@ -48,7 +48,7 @@ export function OnboardingUnderlineField({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={placeholderColor}
+          placeholderTextColor={PLACEHOLDER_COLOR}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           style={[

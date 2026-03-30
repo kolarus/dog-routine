@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useMemo } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Spacing } from '@/constants/theme';
 
 import { ROUTINE_ITEMS } from './definitions';
 import { RoutinePill } from './routine-pill';
+import type { RoutineKind } from './types';
 
 const WIDE_BREAKPOINT = 768;
 
@@ -13,9 +15,24 @@ const WIDE_BREAKPOINT = 768;
  * three equal columns when wide. Reuse {@link RoutinePill} elsewhere with your own wrapper.
  */
 export function HomeBentoRoutineSection() {
+  const router = useRouter();
   const { width } = useWindowDimensions();
 
   const layoutWide = useMemo(() => width >= WIDE_BREAKPOINT, [width]);
+
+  const onRoutinePress = useCallback(
+    (kind: RoutineKind) => {
+      if (kind === 'walk') {
+        router.push('/routine/walk');
+        return;
+      }
+      if (kind === 'feed') {
+        router.push('/routine/feed');
+        return;
+      }
+    },
+    [router],
+  );
 
   return (
     <View style={styles.section}>
@@ -30,7 +47,7 @@ export function HomeBentoRoutineSection() {
             iconWell={item.iconWell}
             showDue={item.showDue}
             layoutStyle={layoutStyleForItem(item.kind, layoutWide)}
-            onPress={() => {}}
+            onPress={() => onRoutinePress(item.kind)}
           />
         ))}
       </View>

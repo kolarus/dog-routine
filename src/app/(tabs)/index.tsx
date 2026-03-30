@@ -1,7 +1,7 @@
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HomeDogHero, HomeHeader } from '@/components/home';
+import { HomeDogHero, HomeHeader, HomeWalkingHistoryPill } from '@/components/home';
 import { HomeBentoRoutineSection } from '@/components/routine';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -53,6 +53,7 @@ export default function HomeScreen() {
             fallbackImage={heroFallback}
             avatarRevision={revision}
           />
+          <HomeWalkingHistoryPill />
           <HomeBentoRoutineSection />
         </View>
       </ScrollView>
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: BottomTabInset + Spacing.four,
+    paddingBottom: BottomTabInset + Spacing.four + Spacing.three,
   },
   inner: {
     maxWidth: MaxContentWidth,

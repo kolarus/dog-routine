@@ -2,7 +2,7 @@ type Listener = () => void;
 
 const listeners = new Set<Listener>();
 
-/** Subscribe to profile JSON / avatar file writes (e.g. refresh Home after Save on Start). */
+/** Subscribe to profile JSON / avatar file writes (e.g. refresh Home after Save on Dog Profile). */
 export function subscribeProfileDiskChanged(listener: Listener): () => void {
   listeners.add(listener);
   return () => {

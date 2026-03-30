@@ -22,7 +22,7 @@ export type HomeDogProfileState = {
 
 /**
  * Loads saved onboarding profile + avatar for the home screen; refetches when the tab gains focus
- * (e.g. after Save on Start).
+ * (e.g. after Save on Dog Profile).
  */
 export function useHomeDogProfile(): HomeDogProfileState {
   const [profile, setProfile] = useState<OnboardingProfilePersisted | null>(null);
