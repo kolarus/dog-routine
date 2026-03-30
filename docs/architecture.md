@@ -22,8 +22,7 @@ src/
 │   ├── _layout.tsx         # Root layout — wraps AppTabs in ThemeProvider
 │   ├── index.tsx           # Home tab
 │   ├── onboarding.tsx      # "Start" tab — create/edit dog profile
-│   ├── settings.tsx        # Settings tab — clear data
-│   └── capuch.tsx          # Static image tab (placeholder)
+│   └── settings.tsx        # Settings tab — clear data
 │
 ├── components/
 │   ├── app-tabs.tsx        # NativeTabs configuration (tab order, icons, labels)
@@ -75,7 +74,6 @@ src/
 |-----------|-----------|-----------|---------|
 | 1 | `onboarding.tsx` | Start | Create / edit dog profile |
 | 2 | `index.tsx` | Home | Dashboard with hero + routine cards |
-| 3 | `capuch.tsx` | Capuch | Static image placeholder |
-| 4 | `settings.tsx` | Settings | Clear saved data |
+| 3 | `settings.tsx` | Settings | Clear saved data |
 
 Configured in `src/components/app-tabs.tsx`.

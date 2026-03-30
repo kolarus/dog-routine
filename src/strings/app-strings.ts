@@ -5,7 +5,6 @@ export const appStrings = {
   tabs: {
     start: 'Start',
     home: 'Home',
-    capuch: 'Capuch',
     settings: 'Settings',
   },
 

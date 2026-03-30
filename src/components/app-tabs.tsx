@@ -30,14 +30,6 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="capuch">
-        <NativeTabs.Trigger.Label>{appStrings.tabs.capuch}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: 'pawprint', selected: 'pawprint.fill' }}
-          md="pets"
-        />
-      </NativeTabs.Trigger>
-
       <NativeTabs.Trigger name="settings">
         <NativeTabs.Trigger.Label>{appStrings.tabs.settings}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
