@@ -8,17 +8,31 @@ export const appStrings = {
     backToHome: 'Home',
     backToHomeA11y: 'Back to home',
     clearData: 'Clear all dog data',
-    clearDataHint: 'Removes the saved profile and profile photo from this device.',
+    clearDataHint:
+      'Removes the saved profile, profile photo, routines, and home profile choices (including skip) from this device.',
     clearConfirmTitle: 'Clear all dog data?',
     clearConfirmMessage:
-      'This deletes your saved name, date of birth, and profile photo. You can set them up again on Dog Profile.',
+      'This deletes your saved name, date of birth, profile photo, schedules, and any “skip profile” choice. You can set them up again from Home or Dog Profile.',
     cancel: 'Cancel',
     clearedTitle: 'Data cleared',
-    clearedMessage: 'Your profile and photo were removed from this device.',
+    clearedMessage: 'Your profile, photo, schedules, and profile setup choices were removed from this device.',
   },
 
   home: {
     brand: 'DogRoutine',
+    /** Stitch “Home - No Dog Profile with Skip” */
+    profileSetupBanner: {
+      title: "Welcome! Let's get to know your pup",
+      body:
+        'Create a profile for your dog to track walks, feeding times, and health routines in one place.',
+      /** Matches Stitch hero `data-alt` */
+      heroImageA11y:
+        'Illustration of a dog silhouette in a sunlit room with soft shadows and warm tones',
+      addProfile: 'Add Dog Profile',
+      addProfileA11y: 'Add dog profile',
+      skipForNow: 'Skip for now',
+      skipForNowA11y: 'Skip setting up dog profile for now',
+    },
     /** Floating action button on home (walk schedule / start walk) */
     startWalkFabA11y: 'Start walk',
     /** Home hero → Dog Profile (onboarding) tab */

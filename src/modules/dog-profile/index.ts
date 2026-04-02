@@ -9,6 +9,11 @@ export {
   parseOnboardingMonthIndex,
 } from './dog-age';
 export { clearAllPersistedDogData } from './clear-persisted-dog-data';
+export {
+  deleteSkippedDogProfileFile,
+  loadSkippedDogProfile,
+  setSkippedDogProfile,
+} from './skipped-profile-flag';
 export { notifyProfileDiskChanged, subscribeProfileDiskChanged } from './profile-disk-events';
 export type { OnboardingDobState, OnboardingProfilePersisted } from './types';
 export {

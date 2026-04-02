@@ -5,6 +5,7 @@ import {
   formatDogAgeLabelFromDob,
   isOnboardingProfileComplete,
   loadOnboardingProfile,
+  loadSkippedDogProfile,
   subscribeProfileDiskChanged,
 } from '@/modules/dog-profile';
 import type { OnboardingProfilePersisted } from '@/modules/dog-profile';
@@ -18,6 +19,13 @@ export type HomeDogProfileState = {
   /** Derived from DOB when parseable */
   ageLabel: string | null;
   ready: boolean;
+  /** User chose “Skip for now” on the home setup banner (persisted). */
+  skippedDogProfile: boolean;
+  /**
+   * First-run banner: no `onboarding-profile.json` yet and user has not skipped.
+   * Any Save (even empty name) writes that file and hides the banner.
+   */
+  showProfileSetupBanner: boolean;
 };
 
 /**
@@ -28,9 +36,13 @@ export function useHomeDogProfile(): HomeDogProfileState {
   const [profile, setProfile] = useState<OnboardingProfilePersisted | null>(null);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [skippedDogProfile, setSkippedDogProfile] = useState(false);
+  /** `onboarding-profile.json` exists and parses (includes empty-name saves). */
+  const [hasPersistedProfileFile, setHasPersistedProfileFile] = useState(false);
 
   const refresh = useCallback(async () => {
-    const p = await loadOnboardingProfile();
+    const [p, skipped] = await Promise.all([loadOnboardingProfile(), loadSkippedDogProfile()]);
+    setHasPersistedProfileFile(p !== null);
     const complete = isOnboardingProfileComplete(p) ? p : null;
     let uri: string | null = null;
     if (complete && (await dogAvatarFileExists())) {
@@ -38,6 +50,7 @@ export function useHomeDogProfile(): HomeDogProfileState {
     }
     setProfile(complete);
     setAvatarUri(uri);
+    setSkippedDogProfile(skipped);
     setReady(true);
   }, []);
 
@@ -54,5 +67,7 @@ export function useHomeDogProfile(): HomeDogProfileState {
     [profile],
   );
 
-  return { profile, avatarUri, ageLabel, ready };
+  const showProfileSetupBanner = ready && !hasPersistedProfileFile && !skippedDogProfile;
+
+  return { profile, avatarUri, ageLabel, ready, skippedDogProfile, showProfileSetupBanner };
 }

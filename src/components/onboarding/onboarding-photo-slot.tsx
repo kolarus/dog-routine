@@ -1,8 +1,9 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { DEFAULT_DOG_PROFILE_IMAGE } from '@/constants/default-dog-profile-image';
 import {
   OnboardingFocusedColors,
   OnboardingFocusedLayout as L,
@@ -69,16 +70,12 @@ export function OnboardingPhotoSlot({
               transition={150}
             />
           ) : (
-            <>
-              <MaterialIcons
-                name="add-a-photo"
-                size={36}
-                color={OnboardingFocusedColors.onSurfaceVariant}
-              />
-              <Text style={[styles.microLabel, { color: OnboardingFocusedColors.onSurfaceVariant }]}>
-                {addPhotoLabel.toUpperCase()}
-              </Text>
-            </>
+            <Image
+              source={DEFAULT_DOG_PROFILE_IMAGE}
+              style={styles.imageFill}
+              contentFit="cover"
+              transition={150}
+            />
           )}
         </View>
         <View
@@ -119,12 +116,6 @@ const styles = StyleSheet.create({
   },
   imageFill: {
     ...StyleSheet.absoluteFillObject,
-  },
-  microLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.6,
-    marginTop: 4,
   },
   badge: {
     position: 'absolute',

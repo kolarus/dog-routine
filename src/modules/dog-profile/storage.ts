@@ -7,6 +7,7 @@ import {
 
 import { resolveDocumentFileUri } from '@/modules/local-photo';
 
+import { deleteSkippedDogProfileFile } from './skipped-profile-flag';
 import type { OnboardingProfilePersisted } from './types';
 
 /** Profile JSON next to other app-owned files (e.g. `dog-avatar.jpg`). */
@@ -66,6 +67,7 @@ export async function saveOnboardingProfile(profile: OnboardingProfilePersisted)
   if (!uri) {
     throw new Error('Cannot save onboarding profile: document directory is unavailable');
   }
+  await deleteSkippedDogProfileFile();
   await writeAsStringAsync(uri, JSON.stringify(profile));
 }
 

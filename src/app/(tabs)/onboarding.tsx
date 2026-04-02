@@ -19,8 +19,9 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const profile = useOnboardingProfile();
 
-  const onSave = React.useCallback(() => {
-    void profile.saveProfile();
+  const onSave = React.useCallback(async () => {
+    await profile.saveProfile();
+    // Wait for disk + notifyProfileDiskChanged so Home reads a complete profile and drops the setup banner.
     // Pop preserves `animation: 'fade'` reverse (fade out); replace is for no history (e.g. deep link).
     if (router.canGoBack()) {
       router.back();

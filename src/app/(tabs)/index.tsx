@@ -1,14 +1,21 @@
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HomeDogHero, HomeHeader, HomeStartWalkFab, HomeWalkingHistoryPill } from '@/components/home';
+import {
+  HomeDogHero,
+  HomeDogProfileSetupBanner,
+  HomeHeader,
+  HomeStartWalkFab,
+  HomeWalkingHistoryPill,
+} from '@/components/home';
 import { HomeBentoRoutineSection } from '@/components/routine';
+import { DEFAULT_DOG_PROFILE_IMAGE } from '@/constants/default-dog-profile-image';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useHomeDogProfile } from '@/hooks/use-home-dog-profile';
 import { appStrings } from '@/strings';
 
-const HERO_FALLBACK = require('@/assets/images/stitch-hero-cooper.png');
+const HERO_FALLBACK = DEFAULT_DOG_PROFILE_IMAGE;
 
 /** Opaque header + status-bar inset so they match (not canvas `#faf9fe` showing through). */
 const HOME_HEADER_BG = StitchCupertinoHome.surfaceLowest;
@@ -18,7 +25,7 @@ const HOME_FAB_BLOCK = 80;
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { profile, avatarUri, ageLabel, ready } = useHomeDogProfile();
+  const { profile, avatarUri, ageLabel, ready, showProfileSetupBanner } = useHomeDogProfile();
 
   const heroTitle = profile
     ? `${profile.dogName.trim()}'s day`
@@ -31,8 +38,8 @@ export default function HomeScreen() {
   const heroImageUri = avatarUri;
   const revision = profile?.savedAt ?? 0;
 
-  const heroFallback =
-    !ready ? HERO_FALLBACK : profile && !avatarUri ? null : HERO_FALLBACK;
+  /** Same default as onboarding whenever there is no saved photo (including named profile, no DOB). */
+  const heroFallback = HERO_FALLBACK;
 
   return (
     <View style={[styles.root, { backgroundColor: StitchCupertinoHome.canvas }]}>
@@ -55,13 +62,17 @@ export default function HomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.inner}>
-          <HomeDogHero
-            title={heroTitle}
-            subtitle={heroSubtitle}
-            imageUri={ready ? heroImageUri : null}
-            fallbackImage={heroFallback}
-            avatarRevision={revision}
-          />
+          {showProfileSetupBanner ? (
+            <HomeDogProfileSetupBanner />
+          ) : (
+            <HomeDogHero
+              title={heroTitle}
+              subtitle={heroSubtitle}
+              imageUri={ready ? heroImageUri : null}
+              fallbackImage={heroFallback}
+              avatarRevision={revision}
+            />
+          )}
           <HomeBentoRoutineSection />
           <HomeWalkingHistoryPill />
         </View>

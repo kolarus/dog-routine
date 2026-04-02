@@ -1,3 +1,4 @@
+export { HomeDogProfileSetupBanner } from './home-dog-profile-setup-banner';
 export { HomeDogHero } from './home-dog-hero';
 export type { HomeDogHeroProps } from './home-dog-hero';
 export { HomeHeader } from './home-header';
