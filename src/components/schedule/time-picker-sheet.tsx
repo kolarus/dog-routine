@@ -2,7 +2,14 @@ import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
@@ -33,7 +40,7 @@ export function TimePickerSheet({
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onCancel}>
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onCancel} />
@@ -70,6 +77,13 @@ export function TimePickerSheet({
             is24Hour={false}
             locale="en"
             onChange={onChange}
+            {...(Platform.OS === 'ios'
+              ? {
+                  themeVariant: 'light' as const,
+                  textColor: StitchCupertinoHome.onSurface,
+                  accentColor,
+                }
+              : {})}
           />
         </View>
       </View>

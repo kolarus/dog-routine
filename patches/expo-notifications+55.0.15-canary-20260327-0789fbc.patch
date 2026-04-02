@@ -1,0 +1,19 @@
+diff --git a/node_modules/expo-notifications/plugin/build/withNotificationsIOS.js b/node_modules/expo-notifications/plugin/build/withNotificationsIOS.js
+index a5f3bb8..9d2002b 100644
+--- a/node_modules/expo-notifications/plugin/build/withNotificationsIOS.js
++++ b/node_modules/expo-notifications/plugin/build/withNotificationsIOS.js
+@@ -7,12 +7,8 @@ const fs_1 = require("fs");
+ const path_1 = require("path");
+ const ERROR_MSG_PREFIX = 'An error occurred while configuring iOS notifications. ';
+ const withNotificationsIOS = (config, { mode = 'development', sounds = [], enableBackgroundRemoteNotifications }) => {
+-    config = (0, config_plugins_1.withEntitlementsPlist)(config, (config) => {
+-        if (!config.modResults['aps-environment']) {
+-            config.modResults['aps-environment'] = mode;
+-        }
+-        return config;
+-    });
++    // Patched (DogRoutine): do not set `aps-environment` so iOS signing works without Push Notifications
++    // on the App ID (local notifications only). Upstream always adds this for remote push / getExpoPushTokenAsync.
+     config = withNotificationSounds(config, { sounds });
+     config = withBackgroundRemoteNotifications(config, enableBackgroundRemoteNotifications);
+     return config;
