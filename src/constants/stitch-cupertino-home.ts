@@ -3,6 +3,7 @@
  * Icons in the design are Material Symbols; we use MaterialIcons in RN for parity.
  */
 export const StitchCupertinoHome = {
+  /** App root / home background — keep `app.json` expo-splash-screen `backgroundColor` in sync for a seamless launch */
   canvas: '#faf9fe',
   surfaceLowest: '#ffffff',
   surfaceLow: '#f4f3f8',
