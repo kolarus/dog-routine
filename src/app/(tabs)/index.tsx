@@ -9,7 +9,9 @@ import { useHomeDogProfile } from '@/hooks/use-home-dog-profile';
 import { appStrings } from '@/strings';
 
 const HERO_FALLBACK = require('@/assets/images/stitch-hero-cooper.png');
-const AVATAR_PLACEHOLDER = require('@/assets/images/stitch-profile-avatar.png');
+
+/** Opaque header + status-bar inset so they match (not canvas `#faf9fe` showing through). */
+const HOME_HEADER_BG = StitchCupertinoHome.surfaceLowest;
 
 export default function HomeScreen() {
   const { profile, avatarUri, ageLabel, ready } = useHomeDogProfile();
@@ -30,14 +32,11 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: StitchCupertinoHome.canvas }]}>
-      <SafeAreaView style={styles.safeTop} edges={['top']}>
+      <SafeAreaView style={[styles.safeTop, { backgroundColor: HOME_HEADER_BG }]} edges={['top']}>
         <HomeHeader
           brand={appStrings.home.brand}
           titleColor={StitchCupertinoHome.onSurface}
-          headerBackgroundColor={StitchCupertinoHome.headerBlurTint}
-          avatarUri={ready ? avatarUri : null}
-          placeholder={AVATAR_PLACEHOLDER}
-          avatarRevision={revision}
+          headerBackgroundColor={HOME_HEADER_BG}
         />
       </SafeAreaView>
 
@@ -53,8 +52,8 @@ export default function HomeScreen() {
             fallbackImage={heroFallback}
             avatarRevision={revision}
           />
-          <HomeWalkingHistoryPill />
           <HomeBentoRoutineSection />
+          <HomeWalkingHistoryPill />
         </View>
       </ScrollView>
     </View>
