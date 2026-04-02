@@ -73,6 +73,11 @@ export const appStrings = {
 
   routine: {
     dueBadge: 'DUE',
+    walkInProgress: {
+      title: 'Walk in progress',
+      placeholder: 'Your active walk will appear here.',
+      closeA11y: 'Close',
+    },
     walkingHistory: {
       label: 'Walking history',
       subtitle: 'View logs and stats',

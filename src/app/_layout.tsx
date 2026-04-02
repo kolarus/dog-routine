@@ -27,6 +27,14 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="routine/[kind]" options={{ headerShown: false }} />
           <Stack.Screen name="routine/history" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="walk-in-progress"
+            options={{
+              headerShown: false,
+              presentation: 'fullScreenModal',
+              animation: 'fade',
+            }}
+          />
         </Stack>
       </ThemeProvider>
     </GestureHandlerRootView>
