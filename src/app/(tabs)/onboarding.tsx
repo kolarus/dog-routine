@@ -1,9 +1,6 @@
-import type { NavigationProp } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-
-import type { AppTabParamList } from '@/components/app-tabs';
 import {
   OnboardingDobField,
   OnboardingFocusedLayout,
@@ -19,13 +16,18 @@ import { appStrings } from '@/strings';
 const s = appStrings.onboarding;
 
 export default function OnboardingScreen() {
-  const tabNavigation = useNavigation<NavigationProp<AppTabParamList>>();
+  const router = useRouter();
   const profile = useOnboardingProfile();
 
   const onSave = React.useCallback(() => {
     void profile.saveProfile();
-    tabNavigation.navigate('index');
-  }, [profile, tabNavigation]);
+    // Pop preserves `animation: 'fade'` reverse (fade out); replace is for no history (e.g. deep link).
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
+  }, [profile, router]);
 
   return (
     <OnboardingFocusedLayout

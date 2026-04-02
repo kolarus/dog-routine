@@ -6,7 +6,6 @@ import {
   OnboardingFocusedColors,
   OnboardingFocusedLayout as L,
 } from '@/constants/onboarding-focused';
-import { BottomTabInset } from '@/constants/theme';
 
 export type OnboardingFocusedLayoutProps = {
   children: React.ReactNode;
@@ -51,7 +50,7 @@ export function OnboardingFocusedLayout({ children, footer }: OnboardingFocusedL
             styles.footerWrap,
             {
               paddingHorizontal: horizontalPadding,
-              paddingBottom: insets.bottom + BottomTabInset + L.ctaVerticalPadding / 2,
+              paddingBottom: insets.bottom + L.ctaVerticalPadding / 2,
               backgroundColor: OnboardingFocusedColors.canvas,
             },
           ]}>

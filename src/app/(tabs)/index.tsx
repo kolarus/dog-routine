@@ -1,10 +1,10 @@
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HomeDogHero, HomeHeader, HomeWalkingHistoryPill } from '@/components/home';
+import { HomeDogHero, HomeHeader, HomeStartWalkFab, HomeWalkingHistoryPill } from '@/components/home';
 import { HomeBentoRoutineSection } from '@/components/routine';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useHomeDogProfile } from '@/hooks/use-home-dog-profile';
 import { appStrings } from '@/strings';
 
@@ -13,7 +13,11 @@ const HERO_FALLBACK = require('@/assets/images/stitch-hero-cooper.png');
 /** Opaque header + status-bar inset so they match (not canvas `#faf9fe` showing through). */
 const HOME_HEADER_BG = StitchCupertinoHome.surfaceLowest;
 
+/** Match Start Walk FAB height (`home-start-walk-fab`) for scroll bottom padding. */
+const HOME_FAB_BLOCK = 80;
+
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const { profile, avatarUri, ageLabel, ready } = useHomeDogProfile();
 
   const heroTitle = profile
@@ -42,7 +46,13 @@ export default function HomeScreen() {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingBottom:
+              Spacing.four + Spacing.three + HOME_FAB_BLOCK + Math.max(insets.bottom, Spacing.two),
+          },
+        ]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.inner}>
           <HomeDogHero
@@ -56,6 +66,7 @@ export default function HomeScreen() {
           <HomeWalkingHistoryPill />
         </View>
       </ScrollView>
+      <HomeStartWalkFab />
     </View>
   );
 }
@@ -78,7 +89,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: BottomTabInset + Spacing.four + Spacing.three,
+    /** `paddingBottom` set in component (FAB + safe area). */
   },
   inner: {
     maxWidth: MaxContentWidth,

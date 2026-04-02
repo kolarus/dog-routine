@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import type { RoutineScheduleKind } from '@/components/routine/types';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
@@ -50,7 +50,7 @@ export function ScheduleScreen({ kind }: ScheduleScreenProps) {
   const picker = useScheduleTimePicker(kind, schedule, swipeGroup.closeOpen);
 
   return (
-    <>
+    <View style={styles.shell}>
       <SchedulePageLayout
         title={s.dailyTitle}
         subtitle={s.dailySubtitle}
@@ -108,6 +108,12 @@ export function ScheduleScreen({ kind }: ScheduleScreenProps) {
         onDone={picker.onDone}
         onCancel={picker.onCancel}
       />
-    </>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  shell: {
+    flex: 1,
+  },
+});

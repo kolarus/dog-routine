@@ -1,11 +1,21 @@
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Stack } from 'expo-router';
 
-import AppTabs from '@/components/app-tabs';
+/** Native-stack fade duration (ms); iOS uses this for `animation: 'fade'`. */
+const ONBOARDING_FADE_MS = 280;
 
-export default function TabLayout() {
+/**
+ * Main app shell (home, dog profile, settings) — stack only, no tab bar.
+ */
+export default function AppShellLayout() {
   return (
-    <ThemeProvider value={DefaultTheme}>
-      <AppTabs />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="onboarding"
+        options={{
+          animation: 'fade',
+          animationDuration: ONBOARDING_FADE_MS,
+        }}
+      />
+    </Stack>
   );
 }

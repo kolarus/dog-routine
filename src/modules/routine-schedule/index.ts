@@ -1,4 +1,10 @@
-export { formatSlotTime, formatSlotTimeParts, generateSlotId, slotToDate } from './format';
+export {
+  formatNextRoutineSlotCardSubtitle,
+  formatSlotTime,
+  formatSlotTimeParts,
+  generateSlotId,
+  slotToDate,
+} from './format';
 export {
   notifyScheduleDiskChanged,
   subscribeScheduleDiskChanged,

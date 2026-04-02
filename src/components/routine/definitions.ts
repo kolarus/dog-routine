@@ -9,7 +9,7 @@ export const ROUTINE_ITEMS: RoutineItem[] = [
   {
     kind: 'walk',
     label: walking.label,
-    subtitle: walking.subtitle,
+    subtitle: walking.subtitleLoading,
     icon: 'directions-walk',
     iconColor: StitchCupertinoHome.primary,
     iconWell: StitchCupertinoHome.walkIconWell,
@@ -17,7 +17,7 @@ export const ROUTINE_ITEMS: RoutineItem[] = [
   {
     kind: 'feed',
     label: feeding.label,
-    subtitle: feeding.subtitle,
+    subtitle: feeding.subtitleLoading,
     icon: 'restaurant',
     iconColor: StitchCupertinoHome.secondary,
     iconWell: StitchCupertinoHome.feedIconWell,

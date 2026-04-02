@@ -2,14 +2,11 @@
  * Single source of user-visible copy. Swap this object (or load by locale) for localization.
  */
 export const appStrings = {
-  tabs: {
-    start: 'Dog Profile',
-    home: 'Home',
-    settings: 'Settings',
-  },
-
   settings: {
     title: 'Settings',
+    /** Stack back affordance (same wording as routine screens’ `headerBackTitle`) */
+    backToHome: 'Home',
+    backToHomeA11y: 'Back to home',
     clearData: 'Clear all dog data',
     clearDataHint: 'Removes the saved profile and profile photo from this device.',
     clearConfirmTitle: 'Clear all dog data?',
@@ -22,11 +19,20 @@ export const appStrings = {
 
   home: {
     brand: 'DogRoutine',
+    /** Floating action button on home (walk schedule / start walk) */
+    startWalkFabA11y: 'Start walk',
+    /** Home hero → Dog Profile (onboarding) tab */
+    heroNavigateA11y: 'Open Dog Profile',
     /** When no saved profile yet */
     heroTitleFallback: "Your dog's day",
     heroSubtitleFallback: 'Save a profile on Dog Profile to show name, age & photo here',
     /** When profile exists but DOB could not be parsed */
     ageUnknown: 'Age — add date of birth on Dog Profile',
+    /** Home bento pill → Settings tab */
+    settingsPill: {
+      label: 'Settings',
+      subtitle: 'Manage profile & app',
+    },
   },
 
   onboarding: {
@@ -105,11 +111,17 @@ export const appStrings = {
     },
     walking: {
       label: 'Walking',
-      subtitle: 'Next: 4:30 PM',
+      /** Shown on home while walk schedule is still loading from disk */
+      subtitleLoading: 'Walk schedule',
+      /** Shown when schedule is loaded but has no walk times */
+      subtitleNoSlots: 'Tap to add walk times',
     },
     feeding: {
       label: 'Feeding',
-      subtitle: 'Done at 8:00 AM',
+      /** Shown on home while feeding schedule is still loading from disk */
+      subtitleLoading: 'Meal schedule',
+      /** Shown when schedule is loaded but has no meal times */
+      subtitleNoSlots: 'Tap to add meal times',
     },
     medicine: {
       label: 'Medicine',

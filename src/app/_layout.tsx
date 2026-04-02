@@ -25,20 +25,8 @@ export default function RootLayout() {
       <ThemeProvider value={DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="routine/[kind]"
-            options={{
-              headerShown: true,
-              headerBackTitle: 'Home',
-            }}
-          />
-          <Stack.Screen
-            name="routine/history"
-            options={{
-              headerShown: true,
-              headerBackTitle: 'Home',
-            }}
-          />
+          <Stack.Screen name="routine/[kind]" options={{ headerShown: false }} />
+          <Stack.Screen name="routine/history" options={{ headerShown: false }} />
         </Stack>
       </ThemeProvider>
     </GestureHandlerRootView>

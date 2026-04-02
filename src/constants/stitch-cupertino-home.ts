@@ -21,6 +21,9 @@ export const StitchCupertinoHome = {
   feedIconWell: 'rgba(255, 211, 143, 0.3)',
   /** Medicine icon well */
   medicineIconWell: 'rgba(255, 218, 214, 0.4)',
+  /** Settings pill (Stitch “Home - Settings as Pill”) */
+  settingsIconWell: 'rgba(171, 214, 255, 0.35)',
+  settingsIconColor: '#006094',
   headerBlurTint: 'rgba(255, 255, 255, 0.8)',
   heroRadius: 32,
   cardRadius: 24,

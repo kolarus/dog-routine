@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppNavTopBar } from '@/components/navigation';
 import { clearAllPersistedDogData } from '@/modules/dog-profile';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
-import { BottomTabInset, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { appStrings } from '@/strings';
 
 const s = appStrings.settings;
 
 export default function SettingsScreen() {
+  const insets = useSafeAreaInsets();
   const [busy, setBusy] = useState(false);
 
   const onClearPress = () => {
@@ -36,12 +38,14 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView
       style={[styles.safe, { backgroundColor: StitchCupertinoHome.canvas }]}
-      edges={['top']}>
+      edges={[]}>
+      <AppNavTopBar title={s.title} />
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: BottomTabInset + Spacing.four }]}
+        contentContainerStyle={[
+          styles.scroll,
+          { paddingBottom: Spacing.four + Math.max(insets.bottom, Spacing.two) },
+        ]}
         showsVerticalScrollIndicator={false}>
-        <Text style={[styles.title, { color: StitchCupertinoHome.onSurface }]}>{s.title}</Text>
-
         <View style={[styles.card, { backgroundColor: StitchCupertinoHome.surfaceLowest }]}>
           <Text style={[styles.hint, { color: StitchCupertinoHome.onSurfaceVariant }]}>
             {s.clearDataHint}
@@ -71,11 +75,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.four,
     gap: Spacing.four,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: -0.5,
   },
   card: {
     borderRadius: 16,
