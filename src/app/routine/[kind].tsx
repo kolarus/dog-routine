@@ -3,11 +3,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 
-import {
-  isRoutineScheduleKind,
-  RoutineScheduleScreen,
-  type RoutineScheduleKind,
-} from '@/components/routine';
+import { isRoutineScheduleKind, type RoutineScheduleKind } from '@/components/routine';
+import { ScheduleScreen } from '@/components/schedule';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { appStrings } from '@/strings';
 
@@ -38,7 +35,7 @@ export default function RoutineActivityScreen() {
   if (scheduleKind) {
     return (
       <View style={{ flex: 1, backgroundColor: StitchCupertinoHome.canvas }}>
-        <RoutineScheduleScreen kind={scheduleKind} />
+        <ScheduleScreen kind={scheduleKind} />
       </View>
     );
   }

@@ -46,6 +46,7 @@ export function HomeBentoRoutineSection() {
             iconColor={item.iconColor}
             iconWell={item.iconWell}
             showDue={item.showDue}
+            disabled={item.disabled}
             layoutStyle={layoutStyleForItem(item.kind, layoutWide)}
             onPress={() => onRoutinePress(item.kind)}
           />

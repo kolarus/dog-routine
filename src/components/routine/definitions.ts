@@ -29,6 +29,6 @@ export const ROUTINE_ITEMS: RoutineItem[] = [
     icon: 'medical-services',
     iconColor: StitchCupertinoHome.error,
     iconWell: StitchCupertinoHome.medicineIconWell,
-    showDue: true,
+    disabled: true,
   },
 ];

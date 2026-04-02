@@ -18,5 +18,6 @@ export type RoutineItem = {
   iconColor: string;
   iconWell: string;
   showDue?: boolean;
+  disabled?: boolean;
 };
 

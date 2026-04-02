@@ -113,7 +113,7 @@ export const appStrings = {
     },
     medicine: {
       label: 'Medicine',
-      subtitle: 'Heartworm pill',
+      subtitle: 'Coming in a future update',
     },
   },
 } as const;

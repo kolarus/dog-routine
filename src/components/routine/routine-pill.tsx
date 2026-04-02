@@ -19,10 +19,14 @@ export type RoutinePillProps = {
   iconColor: string;
   iconWell: string;
   showDue?: boolean;
+  disabled?: boolean;
   onPress?: () => void;
   /** Layout-only styles (width, flex, margins) from the parent container. */
   layoutStyle?: StyleProp<ViewStyle>;
 };
+
+const DISABLED_TINT = 'rgba(132, 117, 96, 0.35)';
+const DISABLED_WELL = 'rgba(132, 117, 96, 0.06)';
 
 export function RoutinePill({
   label,
@@ -31,34 +35,41 @@ export function RoutinePill({
   iconColor,
   iconWell,
   showDue,
+  disabled,
   onPress,
   layoutStyle,
 }: RoutinePillProps) {
   const cardBg = StitchCupertinoHome.surfaceLowest;
-  const titleColor = StitchCupertinoHome.onSurface;
-  const subtitleColor = StitchCupertinoHome.onSurfaceVariant;
   const borderColor = 'rgba(132, 117, 96, 0.12)';
+
+  const resolvedIconColor = disabled ? DISABLED_TINT : iconColor;
+  const resolvedWell = disabled ? DISABLED_WELL : iconWell;
+  const titleColor = disabled ? DISABLED_TINT : StitchCupertinoHome.onSurface;
+  const subtitleColor = disabled
+    ? 'rgba(132, 117, 96, 0.28)'
+    : StitchCupertinoHome.onSurfaceVariant;
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${label}: ${subtitle}`}
-      onPress={onPress}
+      onPress={disabled ? undefined : onPress}
+      disabled={disabled}
       style={({ pressed }) => [
         styles.card,
         layoutStyle,
         {
           backgroundColor: cardBg,
           borderColor,
-          opacity: pressed ? 0.92 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
+          opacity: pressed && !disabled ? 0.92 : 1,
+          transform: [{ scale: pressed && !disabled ? 0.98 : 1 }],
         },
       ]}>
       <View style={styles.cardTop}>
-        <View style={[styles.iconWell, { backgroundColor: iconWell }]}>
-          <MaterialIcons name={icon} size={22} color={iconColor} />
+        <View style={[styles.iconWell, { backgroundColor: resolvedWell }]}>
+          <MaterialIcons name={icon} size={22} color={resolvedIconColor} />
         </View>
-        {showDue ? (
+        {showDue && !disabled ? (
           <View style={styles.dueBadge}>
             <Text style={styles.dueBadgeText}>{appStrings.routine.dueBadge}</Text>
           </View>
