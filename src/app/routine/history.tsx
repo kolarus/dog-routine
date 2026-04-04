@@ -5,10 +5,10 @@ import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { appStrings } from '@/strings';
 
 /**
- * Placeholder for Stitch “Walking History & Stats”. Entry from the home walking-history pill.
+ * Placeholder for Stitch “Activity History & Stats”. Entry from the home activity-history pill.
  */
-export default function WalkingHistoryScreen() {
-  const title = appStrings.routine.walkingHistory.navTitle;
+export default function ActivityHistoryScreen() {
+  const title = appStrings.routine.activityHistory.navTitle;
 
   return (
     <View style={{ flex: 1, backgroundColor: StitchCupertinoHome.canvas }}>

@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useWalkCollapsedBarInset } from '@/context/walk-session-context';
 
 export type SchedulePageLayoutProps = {
   title: string;
@@ -21,13 +22,17 @@ export function SchedulePageLayout({
   children,
 }: SchedulePageLayoutProps) {
   const insets = useSafeAreaInsets();
+  const walkCollapsedInset = useWalkCollapsedBarInset();
 
   return (
     <ScrollView
       style={[styles.scroll, { backgroundColor: StitchCupertinoHome.canvas }]}
       contentContainerStyle={[
         styles.scrollContent,
-        { paddingBottom: Math.max(insets.bottom, Spacing.four) + Spacing.four },
+        {
+          paddingBottom:
+            Math.max(insets.bottom, Spacing.four) + Spacing.four + walkCollapsedInset,
+        },
       ]}
       showsVerticalScrollIndicator={false}>
       <View style={styles.inner}>

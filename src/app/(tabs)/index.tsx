@@ -6,12 +6,13 @@ import {
   HomeDogProfileSetupBanner,
   HomeHeader,
   HomeStartWalkFab,
-  HomeWalkingHistoryPill,
+  HomeActivityHistoryPill,
 } from '@/components/home';
 import { HomeBentoRoutineSection } from '@/components/routine';
 import { DEFAULT_DOG_PROFILE_IMAGE } from '@/constants/default-dog-profile-image';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useWalkCollapsedBarInset, useWalkSession } from '@/context/walk-session-context';
 import { useHomeDogProfile } from '@/hooks/use-home-dog-profile';
 import { appStrings } from '@/strings';
 
@@ -22,10 +23,20 @@ const HOME_HEADER_BG = StitchCupertinoHome.surfaceLowest;
 
 /** Match Start Walk FAB height (`home-start-walk-fab`) for scroll bottom padding. */
 const HOME_FAB_BLOCK = 80;
-
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { isActive: walkActive } = useWalkSession();
+  const walkCollapsedInset = useWalkCollapsedBarInset();
   const { profile, avatarUri, ageLabel, ready, showProfileSetupBanner } = useHomeDogProfile();
+
+  const scrollBottomPad =
+    Spacing.four +
+    Spacing.three +
+    (walkCollapsedInset > 0
+      ? walkCollapsedInset
+      : walkActive
+        ? 0
+        : HOME_FAB_BLOCK + Math.max(insets.bottom, Spacing.two));
 
   const heroTitle = profile
     ? `${profile.dogName.trim()}'s day`
@@ -53,13 +64,7 @@ export default function HomeScreen() {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          {
-            paddingBottom:
-              Spacing.four + Spacing.three + HOME_FAB_BLOCK + Math.max(insets.bottom, Spacing.two),
-          },
-        ]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPad }]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.inner}>
           {showProfileSetupBanner ? (
@@ -74,10 +79,10 @@ export default function HomeScreen() {
             />
           )}
           <HomeBentoRoutineSection />
-          <HomeWalkingHistoryPill />
+          <HomeActivityHistoryPill />
         </View>
       </ScrollView>
-      <HomeStartWalkFab />
+      {!walkActive ? <HomeStartWalkFab /> : null}
     </View>
   );
 }

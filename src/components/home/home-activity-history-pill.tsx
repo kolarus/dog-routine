@@ -6,12 +6,12 @@ import { RoutinePill } from '@/components/routine/routine-pill';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { appStrings } from '@/strings';
 
-const s = appStrings.routine.walkingHistory;
+const s = appStrings.routine.activityHistory;
 
 /**
  * Full-width pill from Stitch “Cupertino Canine Home — Updated”, placed after the hero and before walk/feed/medicine.
  */
-export function HomeWalkingHistoryPill() {
+export function HomeActivityHistoryPill() {
   const router = useRouter();
 
   return (

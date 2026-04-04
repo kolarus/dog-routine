@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppNavTopBar } from '@/components/navigation';
+import { useWalkCollapsedBarInset } from '@/context/walk-session-context';
 import { clearAllPersistedDogData } from '@/modules/dog-profile';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { Spacing } from '@/constants/theme';
@@ -12,6 +13,7 @@ const s = appStrings.settings;
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const walkCollapsedInset = useWalkCollapsedBarInset();
   const [busy, setBusy] = useState(false);
 
   const onClearPress = () => {
@@ -43,7 +45,10 @@ export default function SettingsScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
-          { paddingBottom: Spacing.four + Math.max(insets.bottom, Spacing.two) },
+          {
+            paddingBottom:
+              Spacing.four + Math.max(insets.bottom, Spacing.two) + walkCollapsedInset,
+          },
         ]}
         showsVerticalScrollIndicator={false}>
         <View style={[styles.card, { backgroundColor: StitchCupertinoHome.surfaceLowest }]}>

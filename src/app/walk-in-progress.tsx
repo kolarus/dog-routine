@@ -1,38 +1,160 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { isGlassEffectAPIAvailable } from 'expo-glass-effect';
+import BottomSheet from '@gorhom/bottom-sheet';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useRef, useState, type ComponentRef } from 'react';
+import { Alert, BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import {
+  ActiveWalkBottomSheet,
+  ActiveWalkControls,
+  ActiveWalkMapHero,
+  ActiveWalkMetricsGrid,
+  ActiveWalkTimerBlock,
+  ActiveWalkTopBar,
+} from '@/components/walk/in-progress';
+import { ACTIVE_WALK_MAP_IMAGE_URI } from '@/constants/active-walk-map';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { Spacing } from '@/constants/theme';
+import { useWalkSession } from '@/context/walk-session-context';
+import {
+  formatActivityElapsedLabel,
+  useActivitySessionTimer,
+} from '@/hooks/use-activity-session-timer';
 import { appStrings } from '@/strings';
 
-/**
- * Full-screen walk session (placeholder). Presented as a modal over the tab shell.
- */
+const s = appStrings.routine.walkInProgress;
+
 export default function WalkInProgressScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { collapseWalkUi, endWalk } = useWalkSession();
+
+  const canGlass = Platform.OS === 'ios' && isGlassEffectAPIAvailable();
+
+  const { elapsedSec, paused, togglePause } = useActivitySessionTimer();
+  const [sheetIndex, setSheetIndex] = useState(1);
+  const sheetRef = useRef<ComponentRef<typeof BottomSheet>>(null);
+
+  const onMapPress = useCallback(() => {
+    if (sheetIndex === 0) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.snapToIndex(0);
+    }
+  }, [sheetIndex]);
+
+  const onSheetChange = useCallback((index: number) => {
+    setSheetIndex(index);
+  }, []);
+
+  const handleCollapse = useCallback(() => {
+    collapseWalkUi();
+    router.back();
+  }, [collapseWalkUi, router]);
+
+  const finishActivity = useCallback(() => {
+    endWalk();
+    router.back();
+  }, [endWalk, router]);
+
+  const promptFinishActivity = useCallback(() => {
+    Alert.alert(s.finishConfirmTitle, s.finishConfirmMessage, [
+      { text: s.finishConfirmCancel, style: 'cancel' },
+      {
+        text: s.finishConfirmAction,
+        style: 'destructive',
+        onPress: () => {
+          if (Platform.OS !== 'web') {
+            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
+          finishActivity();
+        },
+      },
+    ]);
+  }, [finishActivity]);
+
+  const onPhotoPress = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  }, []);
+
+  const onTogglePause = useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    togglePause();
+  }, [togglePause]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android') {
+        return undefined;
+      }
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        handleCollapse();
+        return true;
+      });
+      return () => sub.remove();
+    }, [handleCollapse]),
+  );
+
+  const sheetExpanded = sheetIndex === 1;
+  const mapTapA11y = sheetExpanded ? s.mapShowMoreA11y : s.mapShowDetailsA11y;
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View style={styles.root}>
       <StatusBar style="dark" />
-      <View style={styles.header}>
-        <View style={styles.headerSpacer} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={appStrings.routine.walkInProgress.closeA11y}
-          hitSlop={12}
-          onPress={() => router.back()}
-          style={({ pressed }) => [styles.close, pressed && styles.closePressed]}>
-          <MaterialIcons name="close" size={26} color={StitchCupertinoHome.onSurface} />
-        </Pressable>
-      </View>
-      <View style={styles.body}>
-        <Text style={styles.title}>{appStrings.routine.walkInProgress.title}</Text>
-        <Text style={styles.subtitle}>{appStrings.routine.walkInProgress.placeholder}</Text>
-      </View>
+      <ActiveWalkMapHero
+        mapImageUri={ACTIVE_WALK_MAP_IMAGE_URI}
+        mapImageA11y={s.mapImageA11y}
+        mapTapA11y={mapTapA11y}
+        onMapPress={onMapPress}
+      />
+      <ActiveWalkBottomSheet
+        ref={sheetRef}
+        bottomInset={insets.bottom}
+        onSheetChange={onSheetChange}
+        upperContent={
+          <View>
+            <ActiveWalkTimerBlock
+              elapsedLabel={formatActivityElapsedLabel(elapsedSec)}
+              caption={s.timeElapsed}
+            />
+            <ActiveWalkMetricsGrid
+              distanceValue={s.distancePlaceholder}
+              distanceUnit={s.km}
+              stepsValue={s.stepsPlaceholder}
+              stepsUnit={s.steps}
+              caloriesValue={s.caloriesPlaceholder}
+              caloriesUnit={s.calories}
+            />
+          </View>
+        }
+        lowerContent={
+          <ActiveWalkControls
+            paused={paused}
+            pauseA11y={s.pauseA11y}
+            resumeA11y={s.resumeA11y}
+            onTogglePause={onTogglePause}
+            finishCaption={s.finishActivityCaption}
+            finishA11y={s.finishActivityA11y}
+            onFinishPress={promptFinishActivity}
+            photoA11y={s.photoA11y}
+            onPhotoPress={onPhotoPress}
+          />
+        }
+      />
+      <ActiveWalkTopBar
+        paddingTop={insets.top + Spacing.two}
+        useGlass={canGlass}
+        title={s.title}
+        collapseA11y={s.collapseA11y}
+        onCollapse={handleCollapse}
+      />
     </View>
   );
 }
@@ -41,45 +163,5 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: StitchCupertinoHome.canvas,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingHorizontal: Spacing.three,
-    paddingBottom: Spacing.two,
-    minHeight: 44,
-  },
-  headerSpacer: {
-    flex: 1,
-  },
-  close: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: StitchCupertinoHome.surfaceLow,
-  },
-  closePressed: {
-    opacity: 0.85,
-  },
-  body: {
-    flex: 1,
-    paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.four,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: StitchCupertinoHome.onSurface,
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    marginTop: Spacing.two,
-    fontSize: 15,
-    fontWeight: '500',
-    color: StitchCupertinoHome.onSurfaceVariant,
-    lineHeight: 22,
   },
 });

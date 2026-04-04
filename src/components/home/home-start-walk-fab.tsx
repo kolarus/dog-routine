@@ -25,6 +25,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Spacing } from '@/constants/theme';
+import { useWalkSession } from '@/context/walk-session-context';
 import { appStrings } from '@/strings';
 
 const FAB_SIZE = 80;
@@ -116,6 +117,7 @@ function FabGoldDisc() {
 
 export function HomeStartWalkFab() {
   const router = useRouter();
+  const { beginWalk } = useWalkSession();
   const insets = useSafeAreaInsets();
   const { width: screenW, height: screenH } = useWindowDimensions();
 
@@ -245,9 +247,10 @@ export function HomeStartWalkFab() {
     navigatedRef.current = true;
     void hapticSuccess();
     holdProgress.value = 1;
+    beginWalk();
     router.push('/walk-in-progress');
     scheduleDeferredHoldReset();
-  }, [clearGrowthHaptics, holdProgress, router, scheduleDeferredHoldReset]);
+  }, [beginWalk, clearGrowthHaptics, holdProgress, router, scheduleDeferredHoldReset]);
 
   const handlePressIn = () => {
     navigatedRef.current = false;
