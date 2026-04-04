@@ -5,18 +5,28 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useMemo, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  type SharedValue,
+} from 'react-native-reanimated';
 
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { Spacing } from '@/constants/theme';
 
 export const ACTIVE_WALK_SHEET_RADIUS = 40;
 
+/** Height of the sheet as % of container; must stay in sync with `snapPoints`. Index 0 = collapsed, 1 = expanded. */
+export const ACTIVE_WALK_SHEET_SNAP_HEIGHT_PCTS = [11, 50] as const;
+
 export type ActiveWalkBottomSheetProps = {
   bottomInset: number;
   onSheetChange: (index: number) => void;
   upperContent: ReactNode;
   lowerContent: ReactNode;
+  /** When set, gorhom syncs this shared value with the live sheet index (for overlays). */
+  animatedIndex?: SharedValue<number>;
 };
 
 type SheetMainProps = {
@@ -51,7 +61,7 @@ function SheetMainContent({ upperContent, lowerContent, contentPaddingBottom }: 
 
 export const ActiveWalkBottomSheet = forwardRef<BottomSheet, ActiveWalkBottomSheetProps>(
   function ActiveWalkBottomSheet(
-    { bottomInset, onSheetChange, upperContent, lowerContent },
+    { bottomInset, onSheetChange, upperContent, lowerContent, animatedIndex },
     ref,
   ) {
     const animationConfigs = useBottomSheetSpringConfigs({
@@ -62,7 +72,13 @@ export const ActiveWalkBottomSheet = forwardRef<BottomSheet, ActiveWalkBottomShe
     });
 
     /** Collapsed vs expanded; cap expanded so the map stays visible (~half screen). */
-    const snapPoints = useMemo(() => ['11%', '50%'], []);
+    const snapPoints = useMemo(
+      (): (string | number)[] => [
+        `${ACTIVE_WALK_SHEET_SNAP_HEIGHT_PCTS[0]}%`,
+        `${ACTIVE_WALK_SHEET_SNAP_HEIGHT_PCTS[1]}%`,
+      ],
+      [],
+    );
 
     /** Inset as inner padding only — `bottomInset` on the sheet leaves a visible gap (often gray) above the home indicator. */
     const contentPaddingBottom = useMemo(
@@ -80,6 +96,7 @@ export const ActiveWalkBottomSheet = forwardRef<BottomSheet, ActiveWalkBottomShe
         bottomInset={0}
         animationConfigs={animationConfigs}
         onChange={onSheetChange}
+        animatedIndex={animatedIndex}
         backgroundStyle={styles.background}
         handleIndicatorStyle={styles.handleIndicator}
         handleStyle={styles.handleContainer}

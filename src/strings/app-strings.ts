@@ -96,6 +96,7 @@ export const appStrings = {
       photoA11y: 'Add activity photo',
       mapShowMoreA11y: 'Show more map',
       mapShowDetailsA11y: 'Show activity details',
+      recenterMapA11y: 'Follow your direction on the map (heading up)',
     },
     activityHistory: {
       label: 'Activity history',

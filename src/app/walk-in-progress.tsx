@@ -3,14 +3,19 @@ import { isGlassEffectAPIAvailable } from 'expo-glass-effect';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import Constants, { AppOwnership } from 'expo-constants';
 import { useCallback, useRef, useState, type ComponentRef } from 'react';
 import { Alert, BackHandler, Platform, StyleSheet, View } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
+  ACTIVE_WALK_SHEET_SNAP_HEIGHT_PCTS,
   ActiveWalkBottomSheet,
   ActiveWalkControls,
   ActiveWalkMapHero,
+  type ActiveWalkMapHeroRef,
+  ActiveWalkMapRecenterButton,
   ActiveWalkMetricsGrid,
   ActiveWalkTimerBlock,
   ActiveWalkTopBar,
@@ -37,6 +42,15 @@ export default function WalkInProgressScreen() {
   const { elapsedSec, paused, togglePause } = useActivitySessionTimer();
   const [sheetIndex, setSheetIndex] = useState(1);
   const sheetRef = useRef<ComponentRef<typeof BottomSheet>>(null);
+  const mapHeroRef = useRef<ActiveWalkMapHeroRef>(null);
+  const sheetAnimatedIndex = useSharedValue(1);
+
+  const showNativeMapChrome =
+    Platform.OS === 'ios' && Constants.appOwnership !== AppOwnership.Expo;
+
+  const onRecenterMap = useCallback(() => {
+    void mapHeroRef.current?.recenterOnUserLocation();
+  }, []);
 
   const onMapPress = useCallback(() => {
     if (sheetIndex === 0) {
@@ -109,14 +123,17 @@ export default function WalkInProgressScreen() {
     <View style={styles.root}>
       <StatusBar style="dark" />
       <ActiveWalkMapHero
+        ref={mapHeroRef}
         mapImageUri={ACTIVE_WALK_MAP_IMAGE_URI}
         mapImageA11y={s.mapImageA11y}
         mapTapA11y={mapTapA11y}
         onMapPress={onMapPress}
+        sheetSnapHeightPct={ACTIVE_WALK_SHEET_SNAP_HEIGHT_PCTS[sheetIndex]}
       />
       <ActiveWalkBottomSheet
         ref={sheetRef}
         bottomInset={insets.bottom}
+        animatedIndex={sheetAnimatedIndex}
         onSheetChange={onSheetChange}
         upperContent={
           <View>
@@ -148,6 +165,13 @@ export default function WalkInProgressScreen() {
           />
         }
       />
+      {showNativeMapChrome ? (
+        <ActiveWalkMapRecenterButton
+          animatedIndex={sheetAnimatedIndex}
+          accessibilityLabel={s.recenterMapA11y}
+          onPress={onRecenterMap}
+        />
+      ) : null}
       <ActiveWalkTopBar
         paddingTop={insets.top + Spacing.two}
         useGlass={canGlass}
