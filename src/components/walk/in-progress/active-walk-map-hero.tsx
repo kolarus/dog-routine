@@ -43,6 +43,7 @@ const nativeMapStyle = StyleSheet.absoluteFillObject;
 const NAV_DRIFT_EXIT_M = 85;
 
 const readOnlyMapProperties = {
+  /** MapKit user puck + heading wedge (arrow-like); expo-maps markers cannot rotate with course. */
   isMyLocationEnabled: true,
   selectionEnabled: false,
 } as const;
