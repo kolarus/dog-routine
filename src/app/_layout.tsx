@@ -1,3 +1,5 @@
+import '@/modules/walk-route-background';
+
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';

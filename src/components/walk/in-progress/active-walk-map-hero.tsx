@@ -9,6 +9,7 @@ import {
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -19,6 +20,8 @@ import {
   ACTIVE_WALK_MAP_USER_ZOOM,
 } from '@/constants/active-walk-map';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
+import { metersBetweenLatLng } from '@/lib/geo';
+import type { WalkRoutePoint } from '@/lib/walk-route-storage';
 
 export type ActiveWalkMapHeroProps = {
   mapImageUri: string;
@@ -30,6 +33,8 @@ export type ActiveWalkMapHeroProps = {
    * Used to bias the camera so your position sits in the visible map above the sheet.
    */
   sheetSnapHeightPct: number;
+  /** Recorded path for the active walk (Apple Maps polyline). */
+  routeCoordinates?: WalkRoutePoint[];
 };
 
 export type ActiveWalkMapHeroRef = {
@@ -39,8 +44,20 @@ export type ActiveWalkMapHeroRef = {
 
 const nativeMapStyle = StyleSheet.absoluteFillObject;
 
-/** If the map center drifts this far from GPS while follow-mode is on, treat it as a manual pan and exit follow. */
-const NAV_DRIFT_EXIT_M = 85;
+/**
+ * If the map center drifts this far from the user's true GPS while follow-mode is on, treat it as a manual pan.
+ * Must be well above sheet-offset / GPS noise; do not use biased camera coordinates here — MapKit tracks raw user location.
+ */
+const NAV_DRIFT_EXIT_M = 220;
+
+/** While browsing (follow off), only reset auto-resume idle if the camera center moves at least this far (meters). */
+const BROWSE_IDLE_MIN_CENTER_MOVE_M = 14;
+
+/** While browsing, zoom change larger than this resets idle (MapKit zoom levels). */
+const BROWSE_IDLE_MIN_ZOOM_DELTA = 0.45;
+
+/** After the user leaves follow mode, resume follow if the map camera stays idle this long (ms). */
+const AUTO_RESUME_FOLLOW_AFTER_IDLE_MS = 5000;
 
 const readOnlyMapProperties = {
   /** MapKit user puck + heading wedge (arrow-like); expo-maps markers cannot rotate with course. */
@@ -81,27 +98,13 @@ function offsetCameraForBottomSheet(
   return { latitude: latitude + deltaLat, longitude };
 }
 
-function metersBetween(
-  a: { latitude: number; longitude: number },
-  b: { latitude: number; longitude: number },
-): number {
-  const R = 6371e3;
-  const φ1 = (a.latitude * Math.PI) / 180;
-  const φ2 = (b.latitude * Math.PI) / 180;
-  const Δφ = ((b.latitude - a.latitude) * Math.PI) / 180;
-  const Δλ = ((b.longitude - a.longitude) * Math.PI) / 180;
-  const x =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
-}
-
 function StaticWalkMapHero({
   mapImageUri,
   mapImageA11y,
   mapTapA11y,
   onMapPress,
   sheetSnapHeightPct: _sheetSnapHeightPct,
+  routeCoordinates: _routeCoordinates,
 }: ActiveWalkMapHeroProps) {
   return (
     <View style={styles.section}>
@@ -144,16 +147,23 @@ function safeAppleSetCamera(
 
 /** Live Apple Maps (dev / release iOS builds only). */
 const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
-  function NativeWalkMap({ mapImageA11y, mapTapA11y, sheetSnapHeightPct }, ref) {
+  function NativeWalkMap({ mapImageA11y, mapTapA11y, sheetSnapHeightPct, routeCoordinates }, ref) {
     const { height: windowHeight } = useWindowDimensions();
     const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(null);
-    const [navigationFollow, setNavigationFollow] = useState(false);
+    const [navigationFollow, setNavigationFollow] = useState(true);
     const [iosStableCam, setIosStableCam] = useState<Cam | null>(null);
 
     const appleRef = useRef<AppleMaps.MapView>(null);
+    const lastBrowseCameraMoveAtRef = useRef(0);
+    const lastBrowseSampleCenterRef = useRef<{ latitude: number; longitude: number } | null>(null);
+    const lastBrowseSampleZoomRef = useRef<number | null>(null);
+    const autoResumeFollowTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const autoResumeFollowInFlightRef = useRef(false);
+    const resumeHeadingNavigationRef = useRef<() => Promise<void>>(async () => {});
     const latestCoordsRef = useRef<{ latitude: number; longitude: number } | null>(null);
     const lastZoomRef = useRef(ACTIVE_WALK_MAP_USER_ZOOM);
-    const navigationFollowRef = useRef(false);
+    /** Keep in sync with useState(true) so first camera events are not misclassified as “browsing”. */
+    const navigationFollowRef = useRef(true);
     const iosUserModeAppliedRef = useRef(false);
     const lastAppliedSheetKeyRef = useRef<string | null>(null);
     const sheetSnapHeightPctRef = useRef(sheetSnapHeightPct);
@@ -172,7 +182,44 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
       navigationFollowRef.current = navigationFollow;
     }, [navigationFollow]);
 
+    useEffect(() => {
+      if (navigationFollow) {
+        if (autoResumeFollowTickRef.current != null) {
+          clearInterval(autoResumeFollowTickRef.current);
+          autoResumeFollowTickRef.current = null;
+        }
+        return;
+      }
+      autoResumeFollowTickRef.current = setInterval(() => {
+        if (navigationFollowRef.current) {
+          return;
+        }
+        if (
+          Date.now() - lastBrowseCameraMoveAtRef.current <
+          AUTO_RESUME_FOLLOW_AFTER_IDLE_MS
+        ) {
+          return;
+        }
+        if (autoResumeFollowInFlightRef.current) {
+          return;
+        }
+        autoResumeFollowInFlightRef.current = true;
+        void resumeHeadingNavigationRef.current().finally(() => {
+          autoResumeFollowInFlightRef.current = false;
+        });
+      }, 400);
+      return () => {
+        if (autoResumeFollowTickRef.current != null) {
+          clearInterval(autoResumeFollowTickRef.current);
+          autoResumeFollowTickRef.current = null;
+        }
+      };
+    }, [navigationFollow]);
+
     const exitNavigationMode = useCallback(() => {
+      lastBrowseCameraMoveAtRef.current = Date.now();
+      lastBrowseSampleCenterRef.current = null;
+      lastBrowseSampleZoomRef.current = null;
       setNavigationFollow(false);
       setIosStableCam(null);
       iosUserModeAppliedRef.current = false;
@@ -207,6 +254,8 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
       setIosStableCam(null);
       setNavigationFollow(true);
     }, []);
+
+    resumeHeadingNavigationRef.current = resumeHeadingNavigation;
 
     useImperativeHandle(
       ref,
@@ -365,6 +414,21 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
     const cameraPosition: Cam =
       navigationFollow && iosStableCam ? iosStableCam : fallbackCam;
 
+    const routePolylines = useMemo(() => {
+      if (!routeCoordinates || routeCoordinates.length < 2) {
+        return [];
+      }
+      return [
+        {
+          id: 'active-walk-route',
+          coordinates: routeCoordinates,
+          color: StitchCupertinoHome.primaryContainer,
+          width: 8,
+          contourStyle: AppleMaps.ContourStyle.GEODESIC,
+        },
+      ];
+    }, [routeCoordinates]);
+
     const onCameraMove = useCallback(
       (e: {
         coordinates?: { latitude?: number; longitude?: number };
@@ -374,6 +438,26 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
           lastZoomRef.current = e.zoom;
         }
         if (!navigationFollowRef.current) {
+          const lat = e.coordinates?.latitude;
+          const lng = e.coordinates?.longitude;
+          if (lat != null && lng != null) {
+            const prev = lastBrowseSampleCenterRef.current;
+            const pt = { latitude: lat, longitude: lng };
+            if (
+              !prev ||
+              metersBetweenLatLng(prev, pt) >= BROWSE_IDLE_MIN_CENTER_MOVE_M
+            ) {
+              lastBrowseSampleCenterRef.current = pt;
+              lastBrowseCameraMoveAtRef.current = Date.now();
+            }
+          }
+          if (typeof e.zoom === 'number' && Number.isFinite(e.zoom)) {
+            const pz = lastBrowseSampleZoomRef.current;
+            lastBrowseSampleZoomRef.current = e.zoom;
+            if (pz != null && Math.abs(e.zoom - pz) >= BROWSE_IDLE_MIN_ZOOM_DELTA) {
+              lastBrowseCameraMoveAtRef.current = Date.now();
+            }
+          }
           return;
         }
         const lat = e.coordinates?.latitude;
@@ -385,18 +469,14 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
         if (!refC) {
           return;
         }
-        const expected = offsetCameraForBottomSheet(
-          refC.latitude,
-          refC.longitude,
-          lastZoomRef.current,
-          windowHeight,
-          sheetSnapHeightPctRef.current,
-        );
-        if (metersBetween({ latitude: lat, longitude: lng }, expected) > NAV_DRIFT_EXIT_M) {
+        if (
+          metersBetweenLatLng({ latitude: lat, longitude: lng }, refC) >
+          NAV_DRIFT_EXIT_M
+        ) {
           exitNavigationMode();
         }
       },
-      [exitNavigationMode, windowHeight],
+      [exitNavigationMode],
     );
 
     return (
@@ -412,6 +492,7 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
           cameraPosition={cameraPosition}
           properties={readOnlyAppleMapProperties}
           uiSettings={readOnlyUiSettings}
+          polylines={routePolylines}
           onCameraMove={onCameraMove}
           colorScheme={AppleMaps.MapColorScheme.AUTOMATIC}
         />

@@ -4,7 +4,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import Constants, { AppOwnership } from 'expo-constants';
-import { useCallback, useRef, useState, type ComponentRef } from 'react';
+import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Alert, BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -35,7 +35,11 @@ const s = appStrings.routine.walkInProgress;
 export default function WalkInProgressScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { collapseWalkUi, endWalk } = useWalkSession();
+  const { collapseWalkUi, endWalk, routePoints, reconcileRouteFromStorage } = useWalkSession();
+
+  useEffect(() => {
+    void reconcileRouteFromStorage();
+  }, [reconcileRouteFromStorage]);
 
   const canGlass = Platform.OS === 'ios' && isGlassEffectAPIAvailable();
 
@@ -129,6 +133,7 @@ export default function WalkInProgressScreen() {
         mapTapA11y={mapTapA11y}
         onMapPress={onMapPress}
         sheetSnapHeightPct={ACTIVE_WALK_SHEET_SNAP_HEIGHT_PCTS[sheetIndex]}
+        routeCoordinates={routePoints}
       />
       <ActiveWalkBottomSheet
         ref={sheetRef}
