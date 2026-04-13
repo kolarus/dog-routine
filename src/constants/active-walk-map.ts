@@ -13,3 +13,17 @@ export const ACTIVE_WALK_MAP_INITIAL_CAMERA = {
 
 /** Zoom when framing the user’s current position. */
 export const ACTIVE_WALK_MAP_USER_ZOOM = 16;
+
+/**
+ * When two stored samples are farther apart in time than this, render them as separate
+ * polylines (no line across the gap — e.g. after long background).
+ */
+export const ACTIVE_WALK_ROUTE_POLYLINE_MAX_GAP_MS = 90_000;
+
+/** Location stream while the walk sheet is expanded (smoother map follow). */
+export const ACTIVE_WALK_MAP_FOLLOW_LOCATION_INTERVAL_EXPANDED_MS = 400;
+export const ACTIVE_WALK_MAP_FOLLOW_DISTANCE_INTERVAL_EXPANDED_M = 2;
+
+/** Location stream while the sheet is collapsed (lighter). */
+export const ACTIVE_WALK_MAP_FOLLOW_LOCATION_INTERVAL_COLLAPSED_MS = 900;
+export const ACTIVE_WALK_MAP_FOLLOW_DISTANCE_INTERVAL_COLLAPSED_M = 4;

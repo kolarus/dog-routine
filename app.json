@@ -28,6 +28,14 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "DogRoutine reads your body mass from Apple Health to estimate calories burned during walks.",
+          "NSHealthUpdateUsageDescription": "DogRoutine does not write data to Apple Health.",
+          "background": false
+        }
+      ],
       "expo-router",
       [
         "expo-image-picker",

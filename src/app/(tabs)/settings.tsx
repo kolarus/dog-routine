@@ -3,7 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppNavTopBar } from '@/components/navigation';
-import { useWalkCollapsedBarInset } from '@/context/walk-session-context';
+import { useWalkCollapsedBarInset, useWalkSession } from '@/context/walk-session-context';
 import { clearAllPersistedDogData } from '@/modules/dog-profile';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { Spacing } from '@/constants/theme';
@@ -14,9 +14,12 @@ const s = appStrings.settings;
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const walkCollapsedInset = useWalkCollapsedBarInset();
-  const [busy, setBusy] = useState(false);
+  const { clearAllActivityData } = useWalkSession();
+  const [busyDog, setBusyDog] = useState(false);
+  const [busyActivity, setBusyActivity] = useState(false);
+  const busy = busyDog || busyActivity;
 
-  const onClearPress = () => {
+  const onClearDogPress = () => {
     Alert.alert(s.clearConfirmTitle, s.clearConfirmMessage, [
       { text: s.cancel, style: 'cancel' },
       {
@@ -24,12 +27,33 @@ export default function SettingsScreen() {
         style: 'destructive',
         onPress: () => {
           void (async () => {
-            setBusy(true);
+            setBusyDog(true);
             try {
               await clearAllPersistedDogData();
               Alert.alert(s.clearedTitle, s.clearedMessage);
             } finally {
-              setBusy(false);
+              setBusyDog(false);
+            }
+          })();
+        },
+      },
+    ]);
+  };
+
+  const onClearActivityPress = () => {
+    Alert.alert(s.clearActivityConfirmTitle, s.clearActivityConfirmMessage, [
+      { text: s.cancel, style: 'cancel' },
+      {
+        text: s.clearActivityData,
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            setBusyActivity(true);
+            try {
+              await clearAllActivityData();
+              Alert.alert(s.activityClearedTitle, s.activityClearedMessage);
+            } finally {
+              setBusyActivity(false);
             }
           })();
         },
@@ -59,12 +83,29 @@ export default function SettingsScreen() {
             accessibilityRole="button"
             accessibilityLabel={s.clearData}
             disabled={busy}
-            onPress={onClearPress}
+            onPress={onClearDogPress}
             style={({ pressed }) => [
               styles.button,
               { opacity: busy ? 0.5 : pressed ? 0.88 : 1 },
             ]}>
             <Text style={styles.buttonLabel}>{s.clearData}</Text>
+          </Pressable>
+        </View>
+
+        <View style={[styles.card, { backgroundColor: StitchCupertinoHome.surfaceLowest }]}>
+          <Text style={[styles.hint, { color: StitchCupertinoHome.onSurfaceVariant }]}>
+            {s.clearActivityDataHint}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={s.clearActivityData}
+            disabled={busy}
+            onPress={onClearActivityPress}
+            style={({ pressed }) => [
+              styles.button,
+              { opacity: busy ? 0.5 : pressed ? 0.88 : 1 },
+            ]}>
+            <Text style={styles.buttonLabel}>{s.clearActivityData}</Text>
           </Pressable>
         </View>
       </ScrollView>

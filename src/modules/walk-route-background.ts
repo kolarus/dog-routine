@@ -17,6 +17,7 @@ TaskManager.defineTask(WALK_ROUTE_LOCATION_TASK, async ({ data, error }) => {
   const points = locations.map((loc) => ({
     latitude: loc.coords.latitude,
     longitude: loc.coords.longitude,
+    recordedAt: loc.timestamp,
   }));
   await appendWalkRouteSamples(points);
 });

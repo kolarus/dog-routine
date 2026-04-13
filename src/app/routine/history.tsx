@@ -1,18 +1,31 @@
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { ActivityHistoryList } from '@/components/activity-history';
 import { AppNavTopBar } from '@/components/navigation';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
+import { useWalkSession } from '@/context/walk-session-context';
 import { appStrings } from '@/strings';
 
-/**
- * Placeholder for Stitch “Activity History & Stats”. Entry from the home activity-history pill.
- */
 export default function ActivityHistoryScreen() {
   const title = appStrings.routine.activityHistory.navTitle;
+  const { activitiesLog } = useWalkSession();
 
   return (
-    <View style={{ flex: 1, backgroundColor: StitchCupertinoHome.canvas }}>
+    <View style={styles.root}>
       <AppNavTopBar title={title} />
+      <View style={styles.body}>
+        <ActivityHistoryList activities={activitiesLog} />
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: StitchCupertinoHome.canvas,
+  },
+  body: {
+    flex: 1,
+  },
+});

@@ -13,3 +13,17 @@ export function metersBetweenLatLng(
     Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
   return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
+
+/** Sum of geodesic segment lengths along a polyline (meters). */
+export function totalRouteLengthMeters(
+  points: { latitude: number; longitude: number }[],
+): number {
+  if (points.length < 2) {
+    return 0;
+  }
+  let sum = 0;
+  for (let i = 1; i < points.length; i++) {
+    sum += metersBetweenLatLng(points[i - 1], points[i]);
+  }
+  return sum;
+}

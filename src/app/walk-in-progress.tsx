@@ -4,7 +4,14 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import Constants, { AppOwnership } from 'expo-constants';
-import { useCallback, useEffect, useRef, useState, type ComponentRef } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentRef,
+} from 'react';
 import { Alert, BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,10 +31,12 @@ import { ACTIVE_WALK_MAP_IMAGE_URI } from '@/constants/active-walk-map';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { Spacing } from '@/constants/theme';
 import { useWalkSession } from '@/context/walk-session-context';
+import { formatActivityElapsedLabel } from '@/hooks/use-activity-session-timer';
 import {
-  formatActivityElapsedLabel,
-  useActivitySessionTimer,
-} from '@/hooks/use-activity-session-timer';
+  estimateStepsFromWalkMeters,
+  formatActiveWalkSheetDistanceKm,
+} from '@/lib/format-activity';
+import { totalRouteLengthMeters } from '@/lib/geo';
 import { appStrings } from '@/strings';
 
 const s = appStrings.routine.walkInProgress;
@@ -35,7 +44,24 @@ const s = appStrings.routine.walkInProgress;
 export default function WalkInProgressScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { collapseWalkUi, endWalk, routePoints, reconcileRouteFromStorage } = useWalkSession();
+  const {
+    collapseWalkUi,
+    expandWalkUi,
+    endWalk,
+    routePoints,
+    reconcileRouteFromStorage,
+    elapsedSec,
+    paused,
+    togglePause,
+    showWalkCalories,
+    walkCaloriesDisplayValue,
+  } = useWalkSession();
+
+  useFocusEffect(
+    useCallback(() => {
+      expandWalkUi();
+    }, [expandWalkUi]),
+  );
 
   useEffect(() => {
     void reconcileRouteFromStorage();
@@ -43,7 +69,6 @@ export default function WalkInProgressScreen() {
 
   const canGlass = Platform.OS === 'ios' && isGlassEffectAPIAvailable();
 
-  const { elapsedSec, paused, togglePause } = useActivitySessionTimer();
   const [sheetIndex, setSheetIndex] = useState(1);
   const sheetRef = useRef<ComponentRef<typeof BottomSheet>>(null);
   const mapHeroRef = useRef<ActiveWalkMapHeroRef>(null);
@@ -123,6 +148,14 @@ export default function WalkInProgressScreen() {
   const sheetExpanded = sheetIndex === 1;
   const mapTapA11y = sheetExpanded ? s.mapShowMoreA11y : s.mapShowDetailsA11y;
 
+  const { distanceKmLabel, stepsLabel } = useMemo(() => {
+    const meters = totalRouteLengthMeters(routePoints);
+    return {
+      distanceKmLabel: formatActiveWalkSheetDistanceKm(meters),
+      stepsLabel: String(estimateStepsFromWalkMeters(meters)),
+    };
+  }, [routePoints]);
+
   return (
     <View style={styles.root}>
       <StatusBar style="dark" />
@@ -133,6 +166,7 @@ export default function WalkInProgressScreen() {
         mapTapA11y={mapTapA11y}
         onMapPress={onMapPress}
         sheetSnapHeightPct={ACTIVE_WALK_SHEET_SNAP_HEIGHT_PCTS[sheetIndex]}
+        sheetExpanded={sheetExpanded}
         routeCoordinates={routePoints}
       />
       <ActiveWalkBottomSheet
@@ -147,12 +181,14 @@ export default function WalkInProgressScreen() {
               caption={s.timeElapsed}
             />
             <ActiveWalkMetricsGrid
-              distanceValue={s.distancePlaceholder}
+              distanceValue={distanceKmLabel}
               distanceUnit={s.km}
-              stepsValue={s.stepsPlaceholder}
+              stepsValue={stepsLabel}
               stepsUnit={s.steps}
-              caloriesValue={s.caloriesPlaceholder}
-              caloriesUnit={s.calories}
+              calories={{
+                value: showWalkCalories ? walkCaloriesDisplayValue : s.caloriesUnavailable,
+                unit: s.calories,
+              }}
             />
           </View>
         }
@@ -173,6 +209,7 @@ export default function WalkInProgressScreen() {
       {showNativeMapChrome ? (
         <ActiveWalkMapRecenterButton
           animatedIndex={sheetAnimatedIndex}
+          sheetExpanded={sheetExpanded}
           accessibilityLabel={s.recenterMapA11y}
           onPress={onRecenterMap}
         />

@@ -9,8 +9,7 @@ export type ActiveWalkMetricsGridProps = {
   distanceUnit: string;
   stepsValue: string;
   stepsUnit: string;
-  caloriesValue: string;
-  caloriesUnit: string;
+  calories: { value: string; unit: string };
 };
 
 export function ActiveWalkMetricsGrid({
@@ -18,8 +17,7 @@ export function ActiveWalkMetricsGrid({
   distanceUnit,
   stepsValue,
   stepsUnit,
-  caloriesValue,
-  caloriesUnit,
+  calories,
 }: ActiveWalkMetricsGridProps) {
   return (
     <View style={styles.block}>
@@ -39,8 +37,8 @@ export function ActiveWalkMetricsGrid({
           size={17}
           color={StitchCupertinoHome.primaryContainer}
         />
-        <Text style={styles.caloriesValue}>{caloriesValue}</Text>
-        <Text style={styles.caloriesUnit}>{caloriesUnit}</Text>
+        <Text style={styles.caloriesValue}>{calories.value}</Text>
+        <Text style={styles.caloriesUnit}>{calories.unit}</Text>
       </View>
     </View>
   );

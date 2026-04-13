@@ -16,11 +16,17 @@ import {
 import { Platform, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import {
+  ACTIVE_WALK_MAP_FOLLOW_DISTANCE_INTERVAL_COLLAPSED_M,
+  ACTIVE_WALK_MAP_FOLLOW_DISTANCE_INTERVAL_EXPANDED_M,
+  ACTIVE_WALK_MAP_FOLLOW_LOCATION_INTERVAL_COLLAPSED_MS,
+  ACTIVE_WALK_MAP_FOLLOW_LOCATION_INTERVAL_EXPANDED_MS,
   ACTIVE_WALK_MAP_INITIAL_CAMERA,
   ACTIVE_WALK_MAP_USER_ZOOM,
+  ACTIVE_WALK_ROUTE_POLYLINE_MAX_GAP_MS,
 } from '@/constants/active-walk-map';
 import { StitchCupertinoHome } from '@/constants/stitch-cupertino-home';
 import { metersBetweenLatLng } from '@/lib/geo';
+import { splitWalkRoutePointsByTimeGap } from '@/lib/walk-route-polyline';
 import type { WalkRoutePoint } from '@/lib/walk-route-storage';
 
 export type ActiveWalkMapHeroProps = {
@@ -33,6 +39,8 @@ export type ActiveWalkMapHeroProps = {
    * Used to bias the camera so your position sits in the visible map above the sheet.
    */
   sheetSnapHeightPct: number;
+  /** When true (sheet expanded), the map always follows the user; recenter control is hidden. */
+  sheetExpanded: boolean;
   /** Recorded path for the active walk (Apple Maps polyline). */
   routeCoordinates?: WalkRoutePoint[];
 };
@@ -55,9 +63,6 @@ const BROWSE_IDLE_MIN_CENTER_MOVE_M = 14;
 
 /** While browsing, zoom change larger than this resets idle (MapKit zoom levels). */
 const BROWSE_IDLE_MIN_ZOOM_DELTA = 0.45;
-
-/** After the user leaves follow mode, resume follow if the map camera stays idle this long (ms). */
-const AUTO_RESUME_FOLLOW_AFTER_IDLE_MS = 5000;
 
 const readOnlyMapProperties = {
   /** MapKit user puck + heading wedge (arrow-like); expo-maps markers cannot rotate with course. */
@@ -104,6 +109,7 @@ function StaticWalkMapHero({
   mapTapA11y,
   onMapPress,
   sheetSnapHeightPct: _sheetSnapHeightPct,
+  sheetExpanded: _sheetExpanded,
   routeCoordinates: _routeCoordinates,
 }: ActiveWalkMapHeroProps) {
   return (
@@ -147,7 +153,10 @@ function safeAppleSetCamera(
 
 /** Live Apple Maps (dev / release iOS builds only). */
 const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
-  function NativeWalkMap({ mapImageA11y, mapTapA11y, sheetSnapHeightPct, routeCoordinates }, ref) {
+  function NativeWalkMap(
+    { mapImageA11y, mapTapA11y, sheetSnapHeightPct, sheetExpanded, routeCoordinates },
+    ref,
+  ) {
     const { height: windowHeight } = useWindowDimensions();
     const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(null);
     const [navigationFollow, setNavigationFollow] = useState(true);
@@ -157,8 +166,6 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
     const lastBrowseCameraMoveAtRef = useRef(0);
     const lastBrowseSampleCenterRef = useRef<{ latitude: number; longitude: number } | null>(null);
     const lastBrowseSampleZoomRef = useRef<number | null>(null);
-    const autoResumeFollowTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const autoResumeFollowInFlightRef = useRef(false);
     const resumeHeadingNavigationRef = useRef<() => Promise<void>>(async () => {});
     const latestCoordsRef = useRef<{ latitude: number; longitude: number } | null>(null);
     const lastZoomRef = useRef(ACTIVE_WALK_MAP_USER_ZOOM);
@@ -167,10 +174,12 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
     const iosUserModeAppliedRef = useRef(false);
     const lastAppliedSheetKeyRef = useRef<string | null>(null);
     const sheetSnapHeightPctRef = useRef(sheetSnapHeightPct);
+    const sheetExpandedRef = useRef(sheetExpanded);
     /** Bumped on effect cleanup / unmount so pending rAF chains skip native calls after the view is torn down. */
     const cameraApplyEpochRef = useRef(0);
 
     sheetSnapHeightPctRef.current = sheetSnapHeightPct;
+    sheetExpandedRef.current = sheetExpanded;
 
     const biasedCoords = useCallback(
       (lat: number, lng: number, zoom: number) =>
@@ -183,40 +192,18 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
     }, [navigationFollow]);
 
     useEffect(() => {
-      if (navigationFollow) {
-        if (autoResumeFollowTickRef.current != null) {
-          clearInterval(autoResumeFollowTickRef.current);
-          autoResumeFollowTickRef.current = null;
-        }
+      if (!sheetExpanded) {
         return;
       }
-      autoResumeFollowTickRef.current = setInterval(() => {
-        if (navigationFollowRef.current) {
-          return;
-        }
-        if (
-          Date.now() - lastBrowseCameraMoveAtRef.current <
-          AUTO_RESUME_FOLLOW_AFTER_IDLE_MS
-        ) {
-          return;
-        }
-        if (autoResumeFollowInFlightRef.current) {
-          return;
-        }
-        autoResumeFollowInFlightRef.current = true;
-        void resumeHeadingNavigationRef.current().finally(() => {
-          autoResumeFollowInFlightRef.current = false;
-        });
-      }, 400);
-      return () => {
-        if (autoResumeFollowTickRef.current != null) {
-          clearInterval(autoResumeFollowTickRef.current);
-          autoResumeFollowTickRef.current = null;
-        }
-      };
-    }, [navigationFollow]);
+      setNavigationFollow(true);
+      iosUserModeAppliedRef.current = false;
+      lastAppliedSheetKeyRef.current = null;
+    }, [sheetExpanded]);
 
     const exitNavigationMode = useCallback(() => {
+      if (sheetExpandedRef.current) {
+        return;
+      }
       lastBrowseCameraMoveAtRef.current = Date.now();
       lastBrowseSampleCenterRef.current = null;
       lastBrowseSampleZoomRef.current = null;
@@ -302,11 +289,19 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
       let posSub: Location.LocationSubscription | undefined;
       void (async () => {
         try {
+          const timeInterval = sheetExpanded
+            ? ACTIVE_WALK_MAP_FOLLOW_LOCATION_INTERVAL_EXPANDED_MS
+            : ACTIVE_WALK_MAP_FOLLOW_LOCATION_INTERVAL_COLLAPSED_MS;
+          const distanceInterval = sheetExpanded
+            ? ACTIVE_WALK_MAP_FOLLOW_DISTANCE_INTERVAL_EXPANDED_M
+            : ACTIVE_WALK_MAP_FOLLOW_DISTANCE_INTERVAL_COLLAPSED_M;
           posSub = await Location.watchPositionAsync(
             {
-              accuracy: Location.Accuracy.Balanced,
-              timeInterval: 900,
-              distanceInterval: 4,
+              accuracy: sheetExpanded
+                ? Location.Accuracy.High
+                : Location.Accuracy.Balanced,
+              timeInterval,
+              distanceInterval,
             },
             (loc) => {
               const c = {
@@ -324,20 +319,16 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
       return () => {
         posSub?.remove();
       };
-    }, [navigationFollow]);
+    }, [navigationFollow, sheetExpanded]);
 
     useLayoutEffect(() => {
-      if (!navigationFollow || !latestCoordsRef.current) {
+      if (!navigationFollow || !userCoords) {
         return;
       }
       const zoom = lastZoomRef.current;
-      const coordinates = biasedCoords(
-        latestCoordsRef.current.latitude,
-        latestCoordsRef.current.longitude,
-        zoom,
-      );
+      const coordinates = biasedCoords(userCoords.latitude, userCoords.longitude, zoom);
       setIosStableCam({ coordinates, zoom });
-    }, [navigationFollow, sheetSnapHeightPct, windowHeight, biasedCoords]);
+    }, [navigationFollow, userCoords, sheetSnapHeightPct, windowHeight, biasedCoords]);
 
     useEffect(() => {
       return () => {
@@ -418,15 +409,17 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
       if (!routeCoordinates || routeCoordinates.length < 2) {
         return [];
       }
-      return [
-        {
-          id: 'active-walk-route',
-          coordinates: routeCoordinates,
-          color: StitchCupertinoHome.primaryContainer,
-          width: 8,
-          contourStyle: AppleMaps.ContourStyle.GEODESIC,
-        },
-      ];
+      const segments = splitWalkRoutePointsByTimeGap(
+        routeCoordinates,
+        ACTIVE_WALK_ROUTE_POLYLINE_MAX_GAP_MS,
+      );
+      return segments.map((coordinates, index) => ({
+        id: `active-walk-route-${index}`,
+        coordinates,
+        color: StitchCupertinoHome.primaryContainer,
+        width: 8,
+        contourStyle: AppleMaps.ContourStyle.GEODESIC,
+      }));
     }, [routeCoordinates]);
 
     const onCameraMove = useCallback(
@@ -436,6 +429,9 @@ const NativeWalkMap = forwardRef<ActiveWalkMapHeroRef, ActiveWalkMapHeroProps>(
       }) => {
         if (typeof e.zoom === 'number' && Number.isFinite(e.zoom)) {
           lastZoomRef.current = e.zoom;
+        }
+        if (sheetExpandedRef.current) {
+          return;
         }
         if (!navigationFollowRef.current) {
           const lat = e.coordinates?.latitude;

@@ -23,12 +23,15 @@ const RAISE_BY_BUTTON_HEIGHT = BTN;
 
 export type ActiveWalkMapRecenterButtonProps = {
   animatedIndex: SharedValue<number>;
+  /** When the walk sheet is fully expanded, the control is hidden and does not intercept touches. */
+  sheetExpanded: boolean;
   accessibilityLabel: string;
   onPress: () => void;
 };
 
 export function ActiveWalkMapRecenterButton({
   animatedIndex,
+  sheetExpanded,
   accessibilityLabel,
   onPress,
 }: ActiveWalkMapRecenterButtonProps) {
@@ -51,6 +54,12 @@ export function ActiveWalkMapRecenterButton({
         [topWhenCollapsed, topWhenExpanded],
         Extrapolation.CLAMP,
       ) - RAISE_BY_BUTTON_HEIGHT;
+    const opacity = interpolate(
+      animatedIndex.value,
+      [0, 0.12, 1],
+      [1, 0, 0],
+      Extrapolation.CLAMP,
+    );
     return {
       position: 'absolute' as const,
       top,
@@ -58,6 +67,7 @@ export function ActiveWalkMapRecenterButton({
       width: BTN,
       height: BTN,
       zIndex: 100,
+      opacity,
     };
   });
 
@@ -69,7 +79,11 @@ export function ActiveWalkMapRecenterButton({
   };
 
   return (
-    <Animated.View style={animatedStyle} pointerEvents="box-none">
+    <Animated.View
+      style={animatedStyle}
+      pointerEvents={sheetExpanded ? 'none' : 'box-none'}
+      accessibilityElementsHidden={sheetExpanded}
+      importantForAccessibility={sheetExpanded ? 'no-hide-descendants' : 'auto'}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}

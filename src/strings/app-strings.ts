@@ -9,13 +9,21 @@ export const appStrings = {
     backToHomeA11y: 'Back to home',
     clearData: 'Clear all dog data',
     clearDataHint:
-      'Removes the saved profile, profile photo, routines, and home profile choices (including skip) from this device.',
+      'Removes the saved profile, profile photo, routines, and home profile choices (including skip) from this device. Walk history is stored separately — use “Clear activity data” below to remove it.',
     clearConfirmTitle: 'Clear all dog data?',
     clearConfirmMessage:
-      'This deletes your saved name, date of birth, profile photo, schedules, and any “skip profile” choice. You can set them up again from Home or Dog Profile.',
+      'This deletes your saved name, date of birth, profile photo, schedules, and any “skip profile” choice. You can set them up again from Home or Dog Profile. Your walk history is not removed.',
     cancel: 'Cancel',
     clearedTitle: 'Data cleared',
     clearedMessage: 'Your profile, photo, schedules, and profile setup choices were removed from this device.',
+    clearActivityData: 'Clear activity data',
+    clearActivityDataHint:
+      'Removes walk history and any recorded route from this device. Your dog profile, photo, and feeding or walk schedules are not affected.',
+    clearActivityConfirmTitle: 'Clear activity data?',
+    clearActivityConfirmMessage:
+      'This deletes all logged walks and route data stored on this device. Your dog profile and routines stay as they are.',
+    activityClearedTitle: 'Activity data cleared',
+    activityClearedMessage: 'Walk history and route data were removed from this device.',
   },
 
   home: {
@@ -82,6 +90,8 @@ export const appStrings = {
       km: 'KM',
       steps: 'Steps',
       calories: 'Calories',
+      /** Shown when Apple Health body mass is unavailable */
+      caloriesUnavailable: '—',
       distancePlaceholder: '0.00',
       stepsPlaceholder: '0',
       caloriesPlaceholder: '0',
@@ -102,6 +112,20 @@ export const appStrings = {
       label: 'Activity history',
       subtitle: 'View logs and stats',
       navTitle: 'Activity history',
+      emptyTitle: 'No activities yet',
+      emptySubtitle: 'Start a walk from Home and your walks will show up here.',
+      kindWalk: 'Walk',
+      statusInProgress: 'In progress',
+      statusCompleted: 'Completed',
+      /** Placeholders: {{distance}}, {{kcal}} — only when Apple Health body mass is available */
+      metricsInProgress: '{{distance}} · {{kcal}} kcal',
+      /** Placeholder: {{distance}} */
+      metricsInProgressNoCal: '{{distance}}',
+      /** Placeholders: {{distance}}, {{kcal}}, {{duration}} */
+      metricsCompleted: '{{distance}} · {{kcal}} kcal · {{duration}}',
+      /** Placeholders: {{distance}}, {{duration}} */
+      metricsCompletedNoCal: '{{distance}} · {{duration}}',
+      openInProgressA11y: 'Open activity in progress',
     },
     walkSchedule: {
       navTitle: 'Walk schedule',
